@@ -74,7 +74,12 @@ class Command(BaseCommand):
             if p.image:
                 continue
             url = (p.image_url or '').strip()
-            if url and 'picsum' not in url:
+            needs_update = (
+                not url
+                or 'picsum' in url
+                or url.startswith('/media/')
+            )
+            if not needs_update:
                 continue
             slug = p.category.slug if p.category_id else 'default'
             p.image_url = pick_themed_image(slug, p.name)
@@ -1524,9 +1529,7 @@ class Command(BaseCommand):
         )
 
         for g in gear_items:
-            img = g.get('image_url', '')
-            if not (isinstance(img, str) and img.startswith('/media/')):
-                g['image_url'] = pick_themed_image(g['category'].slug, g['name'])
+            g['image_url'] = pick_themed_image(g['category'].slug, g['name'])
 
         for g in gear_items:
             name = g['name']
@@ -1791,7 +1794,8 @@ class Command(BaseCommand):
             )
 
     def create_trails(self):
-        # Фото маршрутів: media/trails/trail-01…06 (локальні знімки маршрутів)
+        _Q = 'ixlib=rb-4.0.3&auto=format&fit=crop&w=1400&q=82'
+        _B = 'https://images.unsplash.com'
         trails = [
             {
                 'name': 'Карпатська кільцева', 'city': 'Буковель',
@@ -1799,7 +1803,7 @@ class Command(BaseCommand):
                 'difficulty': 'hard', 'trail_type': 'mtb',
                 'distance_km': 45.5, 'elevation_m': 1800, 'duration_hours': 5.5,
                 'rating': 4.9,
-                'image_url': '/media/trails/trail-02.png',
+                'image_url': f'{_B}/photo-1464822759023-fed622ff2c3b?{_Q}',
             },
             {
                 'name': 'Київська набережна', 'city': 'Київ',
@@ -1807,7 +1811,7 @@ class Command(BaseCommand):
                 'difficulty': 'easy', 'trail_type': 'city',
                 'distance_km': 22.0, 'elevation_m': 50, 'duration_hours': 1.5,
                 'rating': 4.6,
-                'image_url': '/media/trails/trail-01.png',
+                'image_url': f'{_B}/photo-1476514525535-07fb3b4ae5f1?{_Q}',
             },
             {
                 'name': 'Знесіння — Личаківський ліс', 'city': 'Львів',
@@ -1815,7 +1819,7 @@ class Command(BaseCommand):
                 'difficulty': 'medium', 'trail_type': 'mixed',
                 'distance_km': 18.0, 'elevation_m': 320, 'duration_hours': 2.5,
                 'rating': 4.7,
-                'image_url': '/media/trails/trail-03.png',
+                'image_url': f'{_B}/photo-1441974231531-c6227db76b6e?{_Q}',
             },
             {
                 'name': 'Одеська морська', 'city': 'Одеса',
@@ -1823,7 +1827,7 @@ class Command(BaseCommand):
                 'difficulty': 'easy', 'trail_type': 'city',
                 'distance_km': 28.0, 'elevation_m': 80, 'duration_hours': 2.0,
                 'rating': 4.5,
-                'image_url': '/media/trails/trail-04.png',
+                'image_url': f'{_B}/photo-1507525428034-b723cf961d3e?{_Q}',
             },
             {
                 'name': 'Гуцульське кільце XC', 'city': 'Яремче',
@@ -1831,7 +1835,7 @@ class Command(BaseCommand):
                 'difficulty': 'extreme', 'trail_type': 'mtb',
                 'distance_km': 32.0, 'elevation_m': 2200, 'duration_hours': 6.0,
                 'rating': 4.8,
-                'image_url': '/media/trails/trail-05.png',
+                'image_url': f'{_B}/photo-1519331379826-f10be5486c6f?{_Q}',
             },
             {
                 'name': 'Харківський веломаршрут', 'city': 'Харків',
@@ -1839,7 +1843,7 @@ class Command(BaseCommand):
                 'difficulty': 'easy', 'trail_type': 'city',
                 'distance_km': 25.0, 'elevation_m': 60, 'duration_hours': 1.8,
                 'rating': 4.3,
-                'image_url': '/media/trails/trail-06.png',
+                'image_url': f'{_B}/photo-1500530855697-b586d89ba3ee?{_Q}',
             },
         ]
         for t in trails:
