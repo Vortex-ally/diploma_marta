@@ -613,9 +613,9 @@
                 <a class="hero-photo-tertiary hero-photo-link" href="{% static 'images/hero-velodrome-3.png' %}" target="_blank" rel="noopener" aria-label="Відкрити фото 3">
                     <img src="{% static 'images/hero-velodrome-3.png' %}" alt="Велотрек (фото 3)" width="180" height="180" loading="eager">
                 </a>
-                <a class="floating-card floating-card--price floating-card--link" href="{% url 'catalog' %}?price_min=3999&sort=price_asc" aria-label="Перейти в каталог">
+                <a class="floating-card floating-card--price floating-card--link" href="{% url 'catalog' %}?sort=price_asc" aria-label="Перейти в каталог">
                     <div class="fc-label">Найкраща ціна</div>
-                    <div class="fc-value">від 3 999 ₴</div>
+                    <div class="fc-value">від {% if cheapest_bike %}{{ cheapest_bike.price|floatformat:0 }} ₴{% else %}—{% endif %}</div>
                 </a>
                 {% if user.is_authenticated %}
                     <a class="floating-card floating-card--range floating-card--link" href="{% url 'trails' %}" aria-label="Перейти до велотрас">

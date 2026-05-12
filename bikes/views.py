@@ -46,6 +46,10 @@ def home(request):
     popular_trails = Trail.objects.order_by('-rating')[:3]
     brands = Brand.objects.all()[:8]
 
+    cheapest_bike = Product.objects.filter(
+        category__category_type='bike', in_stock=True
+    ).order_by('price').first()
+
     site_stats = {
         'products_total': Product.objects.filter(in_stock=True).count(),
         'bikes_count': Product.objects.filter(category__category_type='bike', in_stock=True).count(),
@@ -61,6 +65,7 @@ def home(request):
         'popular_trails': popular_trails,
         'brands': brands,
         'site_stats': site_stats,
+        'cheapest_bike': cheapest_bike,
     }
     return render(request, 'bikes/home.html', context)
 
