@@ -68,8 +68,9 @@ class Command(BaseCommand):
         return pick_themed_image(category_slug, product_name)
 
     def ensure_all_images(self):
+        from bikes.models import ProductImage
         updated = 0
-        qs = Product.objects.select_related('category').all()
+        qs = Product.objects.select_related('category').prefetch_related('images').all()
         for p in qs:
             if p.image:
                 continue
@@ -79,12 +80,26 @@ class Command(BaseCommand):
                 or 'picsum' in url
                 or url.startswith('/media/')
             )
-            if not needs_update:
-                continue
-            slug = p.category.slug if p.category_id else 'default'
-            p.image_url = pick_themed_image(slug, p.name)
-            p.save(update_fields=['image_url'])
-            updated += 1
+            if needs_update:
+                slug = p.category.slug if p.category_id else 'default'
+                new_url = pick_themed_image(slug, p.name)
+                p.image_url = new_url
+                p.save(update_fields=['image_url'])
+                updated += 1
+            else:
+                new_url = url
+
+            # Sync primary ProductImage so product detail gallery works
+            first = p.images.order_by('sort_order', 'id').first()
+            if first and not first.image:
+                old = (first.image_url or '').strip()
+                if not old or old.startswith('/media/') or 'picsum' in old:
+                    first.image_url = new_url
+                    first.save(update_fields=['image_url'])
+            elif not p.images.exists() and new_url:
+                ProductImage.objects.create(
+                    product=p, image_url=new_url, alt=p.name, sort_order=0
+                )
         self.stdout.write(f'  ↻ фото додано/оновлено: {updated}')
 
     def create_categories(self):
