@@ -223,7 +223,12 @@ class Product(models.Model):
     @property
     def image_src(self):
         if self.image:
-            return self.image.url
+            url = self.image.url
+            if url.startswith('http'):
+                return url
+            if self.image_url:
+                return self.image_url
+            return url
         return self.image_url or ''
 
     @property

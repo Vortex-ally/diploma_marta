@@ -72,7 +72,7 @@ class Command(BaseCommand):
         updated = 0
         qs = Product.objects.select_related('category').prefetch_related('images').all()
         for p in qs:
-            if p.image:
+            if p.image and p.image.url.startswith('http'):
                 continue
             url = (p.image_url or '').strip()
             needs_update = (
