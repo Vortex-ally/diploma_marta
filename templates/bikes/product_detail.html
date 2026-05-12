@@ -721,8 +721,8 @@
                     {% if user.is_authenticated %}
                       <a class="pdp-compare-link" href="#" data-compare-add
                          data-compare-id="{{ product.id }}"
-                         data-compare-name="{{ product.name|escapejs }}"
-                         data-compare-image="{{ product.primary_image_src|default:''|escapejs }}"
+                         data-compare-name="{{ product.name }}"
+                         data-compare-image="{{ product.primary_image_src|default:'' }}"
                          data-compare-url="{% url 'product_detail' product.slug %}">Порівняти товари</a>
                     {% endif %}
                 </div>
@@ -945,8 +945,8 @@
                         {% if user.is_authenticated %}
                             <button type="button" class="btn btn-outline btn-sm" data-compare-add
                                 data-compare-id="{{ p.id }}"
-                                data-compare-name="{{ p.name|escapejs }}"
-                                data-compare-image="{{ p.primary_image_src|default:''|escapejs }}"
+                                data-compare-name="{{ p.name }}"
+                                data-compare-image="{{ p.primary_image_src|default:'' }}"
                                 data-compare-url="{% url 'product_detail' p.slug %}"
                                 style="flex:1; min-width:100px; justify-content:center; font-size:0.7rem; padding:7px 6px; white-space:normal; line-height:1.2;">Порівняти</button>
                         {% else %}

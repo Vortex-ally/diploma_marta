@@ -572,8 +572,8 @@
                         {% if user.is_authenticated %}
                             <button type="button" class="btn btn-outline btn-sm" data-compare-add
                                 data-compare-id="{{ product.id }}"
-                                data-compare-name="{{ product.name|escapejs }}"
-                                data-compare-image="{{ product.primary_image_src|default:''|escapejs }}"
+                                data-compare-name="{{ product.name }}"
+                                data-compare-image="{{ product.primary_image_src|default:'' }}"
                                 data-compare-url="{% url 'product_detail' product.slug %}"
                                 style="flex:1; min-width:110px; justify-content:center; font-size:0.7rem; padding:8px 8px; white-space:normal; line-height:1.2;">Порівняти товари</button>
                         {% else %}
