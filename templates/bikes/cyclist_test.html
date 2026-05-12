@@ -1,0 +1,193 @@
+{% extends 'base.html' %}
+
+{% block title %}Тест: який ти велосипедист? — VeloUkraine{% endblock %}
+
+{% block extra_css %}
+<style>
+  .quiz-wrap { padding: 2rem 0 5rem; }
+  .quiz-shell { max-width: 860px; margin: 0 auto; }
+  .quiz-head { display:flex; justify-content:space-between; gap: 12px; flex-wrap:wrap; align-items:flex-end; }
+  .quiz-title { font-family: var(--font-head); font-weight: 900; letter-spacing: 0.06em; text-transform: uppercase; }
+  .quiz-sub { color: var(--text2); margin-top: 6px; max-width: 70ch; }
+  .quiz-hero {
+    margin-top: 1rem;
+    border: 1px solid rgba(0,0,0,0.10);
+    background: rgba(255,255,255,0.9);
+    box-shadow: 0 24px 70px rgba(0,0,0,0.08);
+    padding: 16px;
+  }
+  .quiz-hero__row { display:flex; justify-content:space-between; gap: 12px; flex-wrap: wrap; align-items:center; }
+  .quiz-hero__stat { color: var(--text3); font-weight: 900; letter-spacing: 0.10em; text-transform: uppercase; font-size: 0.72rem; }
+  .quiz-progress {
+    margin-top: 10px;
+    height: 10px;
+    border: 1px solid rgba(0,0,0,0.12);
+    background: rgba(0,0,0,0.04);
+    overflow: hidden;
+  }
+  .quiz-progress__bar { height: 100%; width: 0%; background: #0a0a0a; transition: width 220ms ease; }
+
+  .quiz-card { margin-top: 14px; border-top: 1px solid var(--border); padding-top: 1rem; display:grid; gap: 14px; }
+  .q {
+    border: 1px solid rgba(0,0,0,0.10);
+    background: rgba(255,255,255,0.94);
+    box-shadow: 0 24px 70px rgba(0,0,0,0.08);
+    padding: 18px;
+  }
+  .q.hidden { display:none; }
+  .q-title { font-family: var(--font-head); font-weight: 900; margin-bottom: 12px; font-size: 1.25rem; }
+  .opts { display:grid; gap: 10px; }
+  .opt {
+    display:flex;
+    align-items:center;
+    gap: 10px;
+    padding: 14px 14px;
+    border: 1px solid rgba(0,0,0,0.12);
+    background: rgba(255,255,255,0.96);
+    cursor:pointer;
+    transition: border-color 160ms ease, transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
+  }
+  .opt:hover { border-color: rgba(0,0,0,0.24); transform: translateY(-1px); box-shadow: 0 14px 40px rgba(0,0,0,0.08); }
+  .opt:has(input:checked) { border-color: rgba(0,0,0,0.38); background: rgba(0,0,0,0.02); box-shadow: 0 14px 40px rgba(0,0,0,0.10); }
+  .opt input { margin: 0; width: 18px; height: 18px; accent-color: #0a0a0a; }
+  .opt span { font-weight: 800; color: var(--text); }
+  .quiz-actions { display:flex; gap: 10px; flex-wrap:wrap; align-items:center; }
+  .quiz-actions .spacer { flex: 1; }
+  .result {
+    border: 1px solid rgba(0,0,0,0.10);
+    background: rgba(255,255,255,0.94);
+    box-shadow: 0 24px 70px rgba(0,0,0,0.08);
+    padding: 18px;
+  }
+  .result h2 { font-family: var(--font-head); font-weight: 900; }
+  .result p { color: var(--text2); margin-top: 8px; line-height: 1.7; }
+  .quiz-hint { color: var(--text3); font-weight: 700; margin-top: 10px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="quiz-wrap">
+  <div class="container">
+    <div class="quiz-shell">
+      <div class="quiz-head">
+        <div>
+          <div class="quiz-title">Тест: який ти велосипедист?</div>
+          <div class="quiz-sub">Відповідай на 8 питань і отримай результат та швидкий підбір велосипедів у каталозі.</div>
+        </div>
+      </div>
+
+      <div class="quiz-hero">
+        <div class="quiz-hero__row">
+          <div class="quiz-hero__stat">8 питань</div>
+          <div class="quiz-hero__stat" id="quizStepText" aria-live="polite">Крок 1/8</div>
+        </div>
+        <div class="quiz-progress" aria-hidden="true">
+          <div class="quiz-progress__bar" id="quizProgressBar"></div>
+        </div>
+      </div>
+
+    {% if result %}
+      <div class="result" style="margin-top: 1rem;">
+        <h2>{{ result.title }}</h2>
+        <p>{{ result.desc }}</p>
+        <div class="quiz-actions" style="margin-top: 12px;">
+          <a class="btn btn-primary" href="{{ result.catalog_url }}">Підібрати велосипеди</a>
+          <a class="btn btn-ghost" href="{% url 'cyclist_test' %}">Пройти ще раз</a>
+        </div>
+      </div>
+    {% endif %}
+
+      <form method="post" class="quiz-card" id="quizForm" {% if result %}style="margin-top: 14px;"{% endif %}>
+      {% csrf_token %}
+      {% for q in questions %}
+        <div class="q" data-quiz-step="{{ forloop.counter0 }}">
+          <div class="q-title">{{ forloop.counter }}. {{ q.title }}</div>
+          <div class="opts">
+            {% for opt in q.options %}
+              <label class="opt">
+                <input type="radio" name="{{ q.id }}" value="{{ opt.0 }}" required>
+                <span>{{ opt.1 }}</span>
+              </label>
+            {% endfor %}
+          </div>
+          <div class="quiz-hint" data-quiz-hint hidden>Оберіть варіант, щоб продовжити.</div>
+        </div>
+      {% endfor %}
+      <div class="quiz-actions">
+        <button class="btn btn-ghost" type="button" id="quizPrev" style="display:none;">Назад</button>
+        <div class="spacer"></div>
+        <button class="btn btn-primary" type="button" id="quizNext" disabled>Далі</button>
+        <button class="btn btn-primary" type="submit" id="quizSubmit" style="display:none;">Отримати результат</button>
+        <a class="btn btn-ghost" href="{% url 'cyclist_test' %}">Скинути</a>
+      </div>
+    </form>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(() => {
+  const form = document.getElementById('quizForm');
+  if (!form) return;
+
+  const steps = Array.from(form.querySelectorAll('[data-quiz-step]'));
+  if (!steps.length) return;
+
+  const prevBtn = document.getElementById('quizPrev');
+  const nextBtn = document.getElementById('quizNext');
+  const submitBtn = document.getElementById('quizSubmit');
+  const stepText = document.getElementById('quizStepText');
+  const bar = document.getElementById('quizProgressBar');
+
+  let idx = 0;
+
+  const showStep = (i) => {
+    idx = Math.max(0, Math.min(steps.length - 1, i));
+    steps.forEach((el, j) => el.classList.toggle('hidden', j !== idx));
+    if (prevBtn) prevBtn.style.display = idx === 0 ? 'none' : 'inline-flex';
+    const isLast = idx === steps.length - 1;
+    if (nextBtn) nextBtn.style.display = isLast ? 'none' : 'inline-flex';
+    if (submitBtn) submitBtn.style.display = isLast ? 'inline-flex' : 'none';
+    if (stepText) stepText.textContent = `Крок ${idx + 1}/${steps.length}`;
+    if (bar) bar.style.width = `${Math.round(((idx + 1) / steps.length) * 100)}%`;
+    // keep the experience stable (no jumps)
+    const hint = steps[idx].querySelector('[data-quiz-hint]');
+    if (hint) hint.hidden = true;
+
+    const answered = isAnswered(steps[idx]);
+    if (nextBtn) nextBtn.disabled = !answered;
+  };
+
+  const isAnswered = (stepEl) => {
+    return !!stepEl.querySelector('input[type="radio"]:checked');
+  };
+
+  prevBtn?.addEventListener('click', () => showStep(idx - 1));
+  nextBtn?.addEventListener('click', () => {
+    if (!isAnswered(steps[idx])) {
+      const hint = steps[idx].querySelector('[data-quiz-hint]');
+      if (hint) hint.hidden = false;
+      return;
+    }
+    showStep(idx + 1);
+  });
+
+  // Enable/disable next button on selection (no auto-advance)
+  steps.forEach((stepEl, j) => {
+    stepEl.addEventListener('change', (e) => {
+      if (!(e.target instanceof HTMLInputElement)) return;
+      if (e.target.type !== 'radio') return;
+      const hint = stepEl.querySelector('[data-quiz-hint]');
+      if (hint) hint.hidden = true;
+      if (j === idx && nextBtn) nextBtn.disabled = false;
+    });
+  });
+
+  // Initial state
+  showStep(0);
+})();
+</script>
+{% endblock %}
+

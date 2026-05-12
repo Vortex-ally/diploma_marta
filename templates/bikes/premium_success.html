@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block title %}Premium активовано — VeloUkraine{% endblock %}
+
+{% block content %}
+<section class="container" style="padding: 2rem 2rem 5rem;">
+  <div style="max-width: 900px; margin: 0 auto;">
+    <h1 style="font-family:var(--font-head);font-weight:900;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:0.75rem;">Premium активовано</h1>
+    <p style="color:var(--text2);margin-bottom:1.25rem;">Тепер ліміти знято. Можна створювати пости та надсилати заявки без обмежень.</p>
+
+    <div style="border-top:1px solid var(--border);padding-top:1rem;">
+      <div style="font-weight:900;">Статус: {{ sub.get_status_display }}</div>
+      {% if sub.current_period_end %}
+        <div style="color:var(--text3);margin-top:6px;">Діє до: {{ sub.current_period_end }}</div>
+      {% endif %}
+      <div style="margin-top:1.25rem;display:flex;gap:10px;flex-wrap:wrap;">
+        <a class="btn btn-primary" href="{% url 'rides_list' %}">Знайти напарника</a>
+        <a class="btn btn-ghost" href="{% url 'premium' %}">Premium</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+

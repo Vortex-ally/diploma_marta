@@ -1,0 +1,273 @@
+{% extends 'base.html' %}
+
+{% block title %}Оформлення замовлення — VeloUkraine{% endblock %}
+
+{% block content %}
+<section class="checkout">
+  <div class="container">
+    <div class="checkout-wrap">
+      <div class="checkout-head">
+        <div>
+          <div class="checkout-kicker">Крок 1/1</div>
+          <h1 class="checkout-title">Оформлення замовлення</h1>
+          <div class="checkout-sub">Дані одержувача та перевірка замовлення. Далі — оплата в Stripe.</div>
+        </div>
+        <a class="btn btn-ghost btn-sm" href="{% url 'cart' %}">Назад у кошик</a>
+      </div>
+
+      <div class="checkout-grid">
+        <div class="checkout-card">
+          <div class="checkout-card__title">Одержувач</div>
+          <form method="post" action="{% url 'checkout_pay' %}" class="checkout-form">
+            {% csrf_token %}
+            <div class="cf-grid">
+              <label class="cf-field">
+                <span>ПІБ <strong class="req">*</strong></span>
+                <input name="recipient_name" type="text" value="{% if form_data and form_data.recipient_name %}{{ form_data.recipient_name }}{% else %}{{ request.user.first_name }} {{ request.user.last_name }}{% endif %}" required pattern="[A-Za-zА-Яа-яІіЇїЄєҐґ' -]{2,200}" title="Тільки літери" autocomplete="name">
+              </label>
+              <label class="cf-field">
+                <span>Телефон <strong class="req">*</strong></span>
+                <input name="recipient_phone" type="tel" value="{{ form_data.recipient_phone|default:profile.phone|default:'' }}" required inputmode="tel" pattern="[0-9+() -]{7,30}" title="Тільки цифри (можна +, пробіли, дужки, дефіси)" autocomplete="tel">
+              </label>
+              <label class="cf-field">
+                <span>Місто <strong class="req">*</strong></span>
+                <input name="recipient_city" type="text" value="{{ form_data.recipient_city|default:profile.city|default:'' }}" required pattern="[A-Za-zА-Яа-яІіЇїЄєҐґ' -]{2,120}" title="Тільки літери" autocomplete="address-level2">
+              </label>
+              <label class="cf-field">
+                <span>Email <strong class="req">*</strong></span>
+                <input name="recipient_email" type="email" value="{{ form_data.recipient_email|default:request.user.email|default:'' }}" required autocomplete="email">
+              </label>
+            </div>
+
+            <label class="cf-field" style="margin-top:12px;">
+              <span>Коментар</span>
+              <textarea name="comment" rows="3" placeholder="Напр. зателефонувати перед доставкою…">{{ form_data.comment|default:'' }}</textarea>
+            </label>
+
+            <div class="checkout-actions">
+              <button class="btn btn-primary" type="submit" {% if not lines %}disabled{% endif %}>
+                Перейти до оплати
+              </button>
+              <div class="checkout-note">Після натискання ви перейдете на сторінку оплати Stripe.</div>
+            </div>
+          </form>
+        </div>
+
+        <aside class="checkout-summary">
+          <div class="checkout-card checkout-card--sticky">
+            <div class="checkout-card__title">Ваше замовлення</div>
+            {% if not lines %}
+              <div class="empty">Кошик порожній.</div>
+            {% else %}
+              <div class="summary-list">
+                {% for line in lines %}
+                  <div class="sum-row">
+                    <div class="sum-img">
+                      {% if line.product.primary_image_src %}
+                        <img src="{{ line.product.primary_image_src }}" alt="{{ line.product.name }}">
+                      {% else %}
+                        <span>Фото</span>
+                      {% endif %}
+                    </div>
+                    <div class="sum-main">
+                      <div class="sum-name">{{ line.product.name }}</div>
+                      <div class="sum-meta">{{ line.qty }} × {{ line.product.price|floatformat:0 }} ₴</div>
+                    </div>
+                    <div class="sum-price">{{ line.product.price|floatformat:0 }} ₴</div>
+                  </div>
+                {% endfor %}
+              </div>
+              <div class="summary-total">
+                <span>Всього</span>
+                <strong>{{ total|floatformat:0 }} ₴</strong>
+              </div>
+            {% endif %}
+          </div>
+        </aside>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  .checkout { padding: 2rem 0 5rem; }
+  .checkout-wrap { max-width: 1200px; margin: 0 auto; }
+  .checkout-head { display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; align-items:flex-end; }
+  .checkout-kicker { color: var(--text3); font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase; font-size: 0.72rem; }
+  .checkout-title { font-family: var(--font-head); font-weight: 900; letter-spacing: 0.06em; text-transform: uppercase; margin-top: 6px; }
+  .checkout-sub { color: var(--text2); margin-top: 8px; max-width: 70ch; }
+
+  .checkout-grid { margin-top: 1.25rem; display:grid; grid-template-columns: 1.2fr 0.8fr; gap: 16px; align-items:start; }
+  @media (max-width: 980px) { .checkout-grid { grid-template-columns: 1fr; } }
+  @media (max-width: 480px) {
+    .checkout { padding: 1.25rem 0 4rem; }
+    .checkout-head { align-items: flex-start; }
+    .checkout-sub { font-size: 0.95rem; }
+    .checkout-card { padding: 14px; }
+    .summary-list .sum-row { gap: 10px; }
+    .sum-img { width: 60px; height: 48px; }
+  }
+
+  .checkout-card {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    box-shadow: var(--shadow);
+    padding: 16px;
+  }
+  .checkout-card__title { font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; font-size: 0.8rem; margin-bottom: 12px; }
+
+  .checkout-form { display:grid; gap: 10px; }
+  .cf-grid { display:grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 720px) { .cf-grid { grid-template-columns: 1fr; } }
+
+  .cf-field { display:grid; gap: 6px; }
+  .cf-field span { color: var(--text3); font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase; font-size: 0.7rem; }
+  .cf-field .req { color: var(--red); font-weight: 900; }
+  .cf-field input, .cf-field textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    background: #fff;
+    border-radius: 14px;
+    outline: none;
+  }
+  .cf-field input:focus, .cf-field textarea:focus { border-color: rgba(0,0,0,0.28); box-shadow: 0 0 0 3px rgba(0,0,0,0.08); }
+  .cf-field textarea { resize: vertical; }
+
+  /* Validation highlight (only after touch / submit) */
+  .cf-field input.is-touched:invalid,
+  .cf-field textarea.is-touched:invalid,
+  .checkout-form.was-submitted .cf-field input:invalid,
+  .checkout-form.was-submitted .cf-field textarea:invalid {
+    border-color: var(--red);
+    box-shadow: 0 0 0 3px rgba(231,76,60,0.14);
+  }
+  .checkout-form.was-submitted .cf-field span,
+  .cf-field input.is-touched:invalid + .cf-hint,
+  .cf-field textarea.is-touched:invalid + .cf-hint { color: var(--text3); }
+  .cf-field:has(input.is-touched:invalid) span,
+  .cf-field:has(textarea.is-touched:invalid) span,
+  .checkout-form.was-submitted .cf-field:has(input:invalid) span,
+  .checkout-form.was-submitted .cf-field:has(textarea:invalid) span {
+    color: var(--red);
+  }
+
+  .checkout-actions { margin-top: 10px; display:grid; gap: 8px; }
+  .checkout-note { color: var(--text3); font-size: 0.85rem; }
+
+  .checkout-card--sticky { position: sticky; top: 90px; }
+  @media (max-width: 980px) { .checkout-card--sticky { position: static; } }
+
+  .summary-list { display:grid; gap: 10px; }
+  .sum-row { display:grid; grid-template-columns: 64px 1fr auto; gap: 10px; align-items:center; }
+  .sum-img {
+    width: 64px; height: 48px;
+    border: 1px solid var(--border);
+    background: #fff;
+    overflow: hidden;
+    display:flex; align-items:center; justify-content:center;
+    color: var(--text3);
+    font-weight: 800;
+    font-size: 0.7rem;
+  }
+  .sum-img img { width: 100%; height: 100%; object-fit: contain; background:#fff; padding: 6px; display:block; }
+  .sum-main { min-width: 0; }
+  .sum-name { font-weight: 900; font-size: 0.9rem; line-height: 1.2; }
+  .sum-meta { color: var(--text3); font-weight: 700; margin-top: 4px; }
+  .sum-price { font-weight: 900; white-space: nowrap; }
+  .summary-total { margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border); display:flex; justify-content:space-between; align-items:baseline; gap: 10px; }
+  .summary-total span { color: var(--text3); font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase; font-size: 0.72rem; }
+  .summary-total strong { font-family: var(--font-head); font-weight: 900; font-size: 1.6rem; }
+  .empty { color: var(--text2); }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(() => {
+  const form = document.querySelector('.checkout-form');
+  if (form) {
+    form.addEventListener('submit', () => {
+      form.classList.add('was-submitted');
+      form.querySelectorAll('input, textarea, select').forEach((el) => el.classList.add('is-touched'));
+    });
+  }
+
+  const markTouched = (el) => {
+    if (!el) return;
+    el.addEventListener('blur', () => el.classList.add('is-touched'));
+    el.addEventListener('input', () => {
+      // if user started typing, consider it touched
+      if (el.value && el.value.trim().length) el.classList.add('is-touched');
+    });
+  };
+
+  const phone = document.querySelector('input[name="recipient_phone"]');
+  if (phone) {
+    // Mask UA phone: +38 (0XX) XXX XX XX
+    const onlyDigits = (s) => (s || '').replace(/\D/g, '');
+    const formatUA = (digits) => {
+      // normalize to 12 digits starting with 38 (UA)
+      let d = (digits || '').slice(0, 12);
+      if (!d) return '';
+      if (d.startsWith('0')) d = ('38' + d).slice(0, 12);
+      if (!d.startsWith('38')) {
+        // if user starts typing local without country, assume UA
+        if (d.length <= 10) d = ('38' + d).slice(0, 12);
+      }
+
+      const cc = d.slice(0, 2);          // 38
+      const a = d.slice(2, 5);           // 0XX
+      const b = d.slice(5, 8);           // XXX
+      const c = d.slice(8, 10);          // XX
+      const e = d.slice(10, 12);         // XX
+
+      let out = `+${cc}`;
+      if (a) out += ` (${a}`;
+      if (a && a.length === 3) out += `)`;
+      if (b) out += ` ${b}`;
+      if (c) out += ` ${c}`;
+      if (e) out += ` ${e}`;
+      return out;
+    };
+
+    const applyMask = () => {
+      const digits = onlyDigits(phone.value);
+      phone.value = formatUA(digits);
+    };
+
+    phone.placeholder = '+38 (0__) ___ __ __';
+    phone.addEventListener('input', () => {
+      // keep allowed symbols, then mask
+      phone.value = phone.value.replace(/[^0-9+\-\s()]/g, '');
+      applyMask();
+    });
+    phone.addEventListener('blur', applyMask);
+    // If value comes prefilled from profile, normalize once
+    setTimeout(() => applyMask(), 0);
+    markTouched(phone);
+  }
+  const name = document.querySelector('input[name="recipient_name"]');
+  if (name) {
+    name.addEventListener('input', () => {
+      name.value = name.value.replace(/[^A-Za-zА-Яа-яІіЇїЄєҐґ'\-\s]/g, '');
+    });
+    markTouched(name);
+  }
+  const city = document.querySelector('input[name="recipient_city"]');
+  if (city) {
+    city.addEventListener('input', () => {
+      city.value = city.value.replace(/[^A-Za-zА-Яа-яІіЇїЄєҐґ'\-\s]/g, '');
+    });
+    markTouched(city);
+  }
+  const email = document.querySelector('input[name="recipient_email"]');
+  if (email) markTouched(email);
+  const comment = document.querySelector('textarea[name="comment"]');
+  if (comment) markTouched(comment);
+})();
+</script>
+{% endblock %}
+

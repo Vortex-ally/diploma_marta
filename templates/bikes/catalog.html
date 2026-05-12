@@ -1,0 +1,629 @@
+{% extends 'base.html' %}
+
+{% block title %}
+{% if current_category %}{{ current_category.name }} — {% elif cat_type == 'gear' %}Екіпірування — {% endif %}Каталог · VeloUkraine
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.catalog-wrap {
+    padding: 2rem 0 6rem;
+}
+
+.catalog-top {
+    background: rgba(255, 255, 255, 0.85);
+    border-bottom: 1px solid var(--border);
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.catalog-top-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.breadcrumb {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    color: var(--text3);
+    font-size: 0.8rem;
+    margin-bottom: 1rem;
+}
+
+.breadcrumb a { color: var(--text2); text-decoration: none; }
+.breadcrumb a:hover { color: var(--accent2); }
+.breadcrumb-sep { color: var(--text3); }
+
+.catalog-title {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 4.5vw, 3.25rem);
+    letter-spacing: 2px;
+    margin-bottom: 0.5rem;
+    color: var(--text);
+}
+
+.catalog-meta {
+    color: var(--text2);
+    font-size: 0.95rem;
+    font-weight: 600;
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.catalog-meta strong {
+    color: var(--text);
+    font-weight: 700;
+}
+
+.catalog-layout {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 2rem;
+    align-items: start;
+}
+
+/* ─── SIDEBAR ─── */
+.sidebar {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    position: sticky;
+    top: 90px;
+}
+
+.sidebar-section {
+    border-bottom: 1px solid var(--border);
+    padding: 1.5rem;
+}
+
+.sidebar-section:last-child { border-bottom: none; }
+
+.sidebar-title {
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text2);
+    margin-bottom: 1rem;
+}
+
+.cat-nav a {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    color: var(--text2);
+    text-decoration: none;
+    border-radius: var(--radius-sm);
+    font-size: 0.875rem;
+    transition: all 0.15s;
+    margin-bottom: 2px;
+}
+
+.cat-nav a:hover, .cat-nav a.active {
+    background: #f4f4f5;
+    color: var(--text);
+}
+
+/* ─── Submenu (drops DOWN inside list) ─── */
+.cat-details { margin-bottom: 2px; }
+.cat-details summary {
+    list-style: none;
+    cursor: pointer;
+}
+.cat-details summary::-webkit-details-marker { display: none; }
+.cat-details summary.cat-main {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    color: var(--text2);
+    text-decoration: none;
+    border-radius: var(--radius-sm);
+    font-size: 0.875rem;
+    transition: all 0.15s;
+    margin-bottom: 2px;
+}
+.cat-details summary.cat-main:hover,
+.cat-details[open] summary.cat-main {
+    background: #f4f4f5;
+    color: var(--text);
+}
+.cat-details summary.cat-main::after {
+    content: '›';
+    color: var(--text3);
+    font-weight: 800;
+    transform: rotate(90deg);
+    transition: transform 0.15s ease;
+}
+.cat-details[open] summary.cat-main::after { transform: rotate(-90deg); }
+.cat-sub {
+    margin: 0 0 8px 0;
+    padding: 6px 8px 8px;
+    border-left: 2px solid var(--border);
+    display: grid;
+    gap: 2px;
+}
+.cat-sub a {
+    display: block;
+    padding: 8px 10px;
+    border-radius: 10px;
+    font-size: 0.86rem;
+    color: var(--text2);
+    text-decoration: none;
+}
+.cat-sub a:hover { background: #f4f4f5; color: var(--text); }
+
+.cat-nav a .cnt {
+    background: #edf3ff;
+    padding: 2px 8px;
+    border-radius: 50px;
+    font-size: 0.7rem;
+    color: var(--text3);
+}
+
+.cat-nav a.active .cnt { background: var(--btn-green); color: #fff; }
+
+/* Price range */
+.price-inputs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.price-inputs input {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 8px 10px;
+    color: var(--text);
+    font-size: 0.875rem;
+    width: 100%;
+    outline: none;
+    font-family: var(--font-body);
+    transition: border-color 0.2s;
+}
+
+.price-inputs input:focus { border-color: var(--accent); }
+
+.price-slider {
+    width: 100%;
+    accent-color: var(--accent);
+}
+
+/* Brand filter */
+.brand-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.brand-check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: background 0.15s;
+}
+
+.brand-check:hover { background: var(--border); }
+
+.brand-check input {
+    accent-color: var(--accent);
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.brand-check label {
+    color: var(--text2);
+    font-size: 0.875rem;
+    cursor: pointer;
+}
+
+/* ─── PRODUCTS AREA ─── */
+.products-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.toolbar-left {
+    color: var(--text2);
+    font-size: 0.875rem;
+}
+
+.toolbar-left strong { color: var(--text); }
+
+.sort-select {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 50px;
+    padding: 10px 44px 10px 16px;
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 0.875rem;
+    outline: none;
+    cursor: pointer;
+    font-weight: 600;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    background-size: 18px 18px;
+}
+
+.sort-select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+
+/* Pagination */
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 3rem;
+    flex-wrap: wrap;
+}
+
+.pagination a, .pagination span {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-sm);
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-decoration: none;
+    border: 1px solid var(--border);
+    transition: all 0.2s;
+    color: var(--text2);
+    background: #fff;
+}
+
+.pagination a:hover { border-color: var(--btn-green); color: var(--btn-green); }
+.pagination .current { background: var(--btn-green); color: #fff; border-color: var(--btn-green); }
+
+/* Empty state */
+.empty-state {
+    text-align: center;
+    padding: 6rem 2rem;
+    color: var(--text2);
+}
+
+.empty-state .emoji { font-size: 5rem; margin-bottom: 1rem; }
+.empty-state h3 { font-family: var(--font-head); font-size: 1.5rem; margin-bottom: 0.5rem; color: var(--text); }
+
+/* Active filters */
+.active-filters {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+}
+
+.filter-tag {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--accent-glow);
+    border: 1px solid rgba(20,184,166,0.25);
+    color: var(--text2);
+    padding: 4px 12px;
+    border-radius: 50px;
+    font-size: 0.75rem;
+}
+
+.filter-tag a { color: var(--accent2); text-decoration: none; font-weight: 700; }
+
+@media (max-width: 1024px) {
+    .catalog-layout { grid-template-columns: 1fr; }
+    .sidebar { position: static; }
+}
+
+@media (max-width: 768px) {
+    .catalog-top { padding: 1.25rem 1rem; margin-bottom: 1.25rem; }
+    .catalog-wrap { padding: 1.25rem 0 4rem; }
+    .catalog-layout { padding: 0 1rem; gap: 1.25rem; }
+    .sidebar-section { padding: 1.1rem; }
+    .products-toolbar { margin-bottom: 1rem; }
+    .sort-select { width: 100%; }
+    .products-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+    .product-img-wrap { height: 160px; }
+    .product-info { padding: 0.95rem; }
+    .product-actions { padding: 0 0.95rem 0.95rem; flex-wrap: wrap; }
+    .product-actions .btn { flex: 1; min-width: 110px; justify-content: center; }
+}
+
+@media (max-width: 420px) {
+    .products-grid { grid-template-columns: 1fr; }
+    .product-img-wrap { height: 190px; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="catalog-top">
+    <div class="catalog-top-inner">
+        <div class="breadcrumb">
+            <a href="/">Головна</a>
+            <span class="breadcrumb-sep">›</span>
+            <a href="/catalog/">Каталог</a>
+            {% if current_category %}
+                <span class="breadcrumb-sep">›</span>
+                <span>{{ current_category.name }}</span>
+            {% elif cat_type == 'gear' %}
+                <span class="breadcrumb-sep">›</span>
+                <span>Екіпірування</span>
+            {% elif cat_type %}
+                <span class="breadcrumb-sep">›</span>
+                <span>
+                    {% if cat_type == 'road' %}Шосейні{% elif cat_type == 'gravel' %}Гравійні{% elif cat_type == 'kids' %}Дитячі{% elif cat_type == 'electric' %}Електровелосипеди{% endif %}
+                </span>
+            {% endif %}
+        </div>
+        <h1 class="catalog-title">
+            {% if current_category %}{{ current_category.name }}
+            {% elif cat_type == 'road' %}ШОСЕЙНІ ВЕЛОСИПЕДИ
+            {% elif cat_type == 'gravel' %}ГРАВІЙНІ ВЕЛОСИПЕДИ
+            {% elif cat_type == 'kids' %}ДИТЯЧІ ВЕЛОСИПЕДИ
+            {% elif cat_type == 'electric' %}ЕЛЕКТРОВЕЛОСИПЕДИ
+            {% elif cat_type == 'gear' %}ЕКІПІРУВАННЯ
+            {% elif q %}РЕЗУЛЬТАТИ ПОШУКУ
+            {% else %}КАТАЛОГ
+            {% endif %}
+        </h1>
+        <div class="catalog-meta">
+            <span>Знайдено: <strong>{{ total_count }} товарів</strong></span>
+            {% if q %}<span>Запит: <strong>"{{ q }}"</strong></span>{% endif %}
+            {% if sidebar_mode == 'bike' and cat_type %}
+                <a href="{% url 'catalog' %}" class="btn btn-ghost btn-sm" style="padding:8px 14px;">Всі велосипеди</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<div class="catalog-wrap">
+    <div class="catalog-layout">
+
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+
+            <!-- Categories -->
+            {% if sidebar_mode == 'bike' %}
+            <div class="sidebar-section">
+                <div class="sidebar-title">Велосипеди</div>
+                <div class="cat-nav">
+                    {% for c in bike_categories %}
+                    {% if c.bike_type %}
+                    <a href="/catalog/{{ c.bike_type }}/" class="{% if cat_type == c.bike_type %}active{% endif %}">
+                        {% if c.bike_type == 'road' %}Шосейні{% elif c.bike_type == 'gravel' %}Гравійні{% elif c.bike_type == 'kids' %}Дитячі{% elif c.bike_type == 'electric' %}Електро{% endif %}
+                        <span class="cnt">{{ c.product_count }}</span>
+                    </a>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            {% if sidebar_mode == 'gear' %}
+            <div class="sidebar-section">
+                <div class="sidebar-title">Екіпірування</div>
+                <div class="cat-nav">
+                    <details class="cat-details" {% if cat_type == 'helmet' %}open{% endif %}>
+                        <summary class="cat-main {% if cat_type == 'helmet' %}active{% endif %}">Шоломи</summary>
+                        <div class="cat-sub" aria-label="Підкатегорії шоломів">
+                            <a href="/catalog/helmet/?q=шосе">Шоломи для шосе</a>
+                            <a href="/catalog/helmet/?q=mtb">Шоломи MTB</a>
+                            <a href="/catalog/helmet/?q=міський">Міські шоломи</a>
+                        </div>
+                    </details>
+                    <details class="cat-details" {% if cat_type == 'clothing' %}open{% endif %}>
+                        <summary class="cat-main {% if cat_type == 'clothing' %}active{% endif %}">Вело-форма</summary>
+                        <div class="cat-sub" aria-label="Підкатегорії вело-форми">
+                            <a href="/catalog/clothing/?q=жіноча">Жінки</a>
+                            <a href="/catalog/clothing/?q=чоловіча">Чоловіки</a>
+                            <a href="/catalog/clothing/?q=дитяча">Діти</a>
+                        </div>
+                    </details>
+                    <a href="/catalog/glasses/" class="{% if cat_type == 'glasses' %}active{% endif %}">Окуляри</a>
+                    <details class="cat-details" {% if cat_type == 'shoes' %}open{% endif %}>
+                        <summary class="cat-main {% if cat_type == 'shoes' %}active{% endif %}">Вело-туфлі</summary>
+                        <div class="cat-sub" aria-label="Підкатегорії вело-туфлів">
+                            <a href="/catalog/shoes/?q=жіночі">Жінки</a>
+                            <a href="/catalog/shoes/?q=чоловічі">Чоловіки</a>
+                            <a href="/catalog/shoes/?q=дитячі">Діти</a>
+                        </div>
+                    </details>
+                    <a href="/catalog/gloves/" class="{% if cat_type == 'gloves' %}active{% endif %}">Рукавички</a>
+                    <a href="/catalog/lights/" class="{% if cat_type == 'lights' %}active{% endif %}">Ліхтарі</a>
+                    <a href="/catalog/bags/" class="{% if cat_type == 'bags' %}active{% endif %}">Сумки</a>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Price filter -->
+            <div class="sidebar-section">
+                <div class="sidebar-title">Ціна (₴)</div>
+                <form method="get" id="filter-form">
+                    {% if q %}<input type="hidden" name="q" value="{{ q }}">{% endif %}
+                    {% if sort %}<input type="hidden" name="sort" value="{{ sort }}">{% endif %}
+                    <div class="price-inputs">
+                        <input type="number" name="price_min" placeholder="від" value="{{ selected_price_min|default:'' }}" min="0">
+                        <input type="number" name="price_max" placeholder="до" value="{{ selected_price_max|default:'' }}" min="0">
+                    </div>
+
+                    {% if brands_list %}
+                    <div class="sidebar-title" style="margin-top:1rem;">Бренд</div>
+                    <div class="brand-list">
+                        {% for brand in brands_list %}
+                        <label class="brand-check">
+                            <input type="radio" name="brand" value="{{ brand.slug }}" {% if selected_brand == brand.slug %}checked{% endif %}>
+                            <label>{{ brand.name }}</label>
+                        </label>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <button type="submit" class="btn btn-primary btn-sm" style="width:100%; justify-content:center; margin-top:1rem;">
+                        Застосувати
+                    </button>
+                    <a href="?{% if q %}q={{ q }}&{% endif %}" class="btn btn-ghost btn-sm" style="width:100%; justify-content:center; margin-top:8px;">
+                        Скинути фільтри
+                    </a>
+                </form>
+            </div>
+
+            <!-- Quick links removed per request -->
+        </aside>
+
+        <!-- PRODUCTS -->
+        <div>
+            <!-- Toolbar -->
+            <div class="products-toolbar">
+                <div class="toolbar-left">
+                    Показано <strong>{{ products|length }}</strong> з <strong>{{ total_count }}</strong> товарів
+                </div>
+                <select class="sort-select" onchange="applySort(this.value)">
+                    <option value="all" {% if sort == 'all' %}selected{% endif %}>Всі</option>
+                    <option value="new" {% if sort == 'new' %}selected{% endif %}>Новинки</option>
+                    <option value="price_asc" {% if sort == 'price_asc' %}selected{% endif %}>Від дешевих</option>
+                    <option value="price_desc" {% if sort == 'price_desc' %}selected{% endif %}>Від дорогих</option>
+                </select>
+            </div>
+
+            <!-- Active filters -->
+            {% if selected_price_min or selected_price_max or selected_brand or q %}
+            <div class="active-filters">
+                {% if q %}<span class="filter-tag">Пошук: "{{ q }}" <a href="?">✕</a></span>{% endif %}
+                {% if selected_price_min %}<span class="filter-tag">від {{ selected_price_min }} ₴ <a href="?{% if q %}q={{ q }}&{% endif %}price_max={{ selected_price_max|default:'' }}">✕</a></span>{% endif %}
+                {% if selected_price_max %}<span class="filter-tag">до {{ selected_price_max }} ₴ <a href="?{% if q %}q={{ q }}&{% endif %}price_min={{ selected_price_min|default:'' }}">✕</a></span>{% endif %}
+                {% if selected_brand %}<span class="filter-tag">Бренд: {{ selected_brand }} <a href="?{% if q %}q={{ q }}&{% endif %}">✕</a></span>{% endif %}
+            </div>
+            {% endif %}
+
+            {% if total_count %}
+            <div class="products-grid">
+                {% for product in products %}
+                <div class="product-card">
+                    <a class="product-card__link" href="/product/{{ product.slug }}/" aria-label="Відкрити {{ product.name }}"></a>
+                    <div class="badges">
+                        {% if product.is_new %}<span class="badge badge-new">НОВИНКА</span>{% endif %}
+                        {% if product.discount_percent > 0 %}<span class="badge badge-sale">-{{ product.discount_percent }}%</span>{% endif %}
+                        {% if product.is_featured %}<span class="badge badge-hit">ХІТ</span>{% endif %}
+                        {% if not product.in_stock %}<span class="badge" style="background:var(--text3);color:#fff;">НЕМАЄ</span>{% endif %}
+                    </div>
+                    <div class="product-img-wrap{% if product.category.bike_type == 'electric' %} electric-bike-photo-wrap{% endif %}">
+                        {% if product.image_src %}
+                            <img src="{{ product.image_src }}" alt="{{ product.name }}" loading="lazy">
+                        {% else %}
+                            <div class="product-img-placeholder">
+                                {% if product.category.category_type == 'gear' %}товар{% else %}велосипед{% endif %}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="product-info">
+                        {% if product.brand %}<div class="product-brand">{{ product.brand.name }}</div>{% endif %}
+                        <div class="product-name">{{ product.name }}</div>
+                        <div class="product-specs">
+                            {% if product.wheel_size %}<span class="spec-tag">{{ product.wheel_size }}"</span>{% endif %}
+                            {% if product.speeds %}<span class="spec-tag">{{ product.speeds }} шв.</span>{% endif %}
+                            {% if product.color %}<span class="spec-tag">{{ product.color }}</span>{% endif %}
+                            {% if product.weight %}<span class="spec-tag">{{ product.weight }} кг</span>{% endif %}
+                            {% if product.range_km %}<span class="spec-tag">{{ product.range_km }}км</span>{% endif %}
+                        </div>
+                        <div class="product-rating">
+                            {% if product.reviews_count %}
+                            <span class="stars">★★★★★</span>
+                            <span class="rating-count">{{ product.rating }}</span>
+                            <span class="rating-num">{{ product.reviews_count }} відг.</span>
+                            {% else %}
+                            <span class="rating-none">немає відгуків</span>
+                            {% endif %}
+                        </div>
+                        <div class="product-price">
+                            <span class="price-current">{{ product.price|floatformat:0 }} ₴</span>
+                            {% if product.old_price %}<span class="price-old">{{ product.old_price|floatformat:0 }} ₴</span>{% endif %}
+                            {% if product.discount_percent %}<span class="price-discount">-{{ product.discount_percent }}%</span>{% endif %}
+                        </div>
+                    </div>
+                    <div class="product-actions" style="flex-wrap:wrap;">
+                        <a href="/product/{{ product.slug }}/" class="btn btn-primary btn-sm" style="flex:1; min-width:110px; justify-content:center;">
+                            {% if product.in_stock %}Детальніше{% else %}Дізнатись{% endif %}
+                        </a>
+                        {% if user.is_authenticated %}
+                            <button type="button" class="btn btn-outline btn-sm" data-compare-add
+                                data-compare-id="{{ product.id }}"
+                                data-compare-name="{{ product.name|escapejs }}"
+                                data-compare-image="{{ product.primary_image_src|default:''|escapejs }}"
+                                data-compare-url="{% url 'product_detail' product.slug %}"
+                                style="flex:1; min-width:110px; justify-content:center; font-size:0.7rem; padding:8px 8px; white-space:normal; line-height:1.2;">Порівняти товари</button>
+                        {% else %}
+                            <a href="{% url 'login' %}?next={% url 'compare' %}" class="btn btn-outline btn-sm" style="flex:1; min-width:110px; justify-content:center; font-size:0.7rem; padding:8px 8px; white-space:normal; line-height:1.2;">
+                                Порівняти
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Pagination -->
+            {% if products.has_other_pages %}
+            <div class="pagination">
+                {% if products.has_previous %}
+                    <a href="?page={{ products.previous_page_number }}&sort={{ sort }}{% if q %}&q={{ q }}{% endif %}">←</a>
+                {% endif %}
+                {% for num in products.paginator.page_range %}
+                    {% if products.number == num %}
+                        <span class="current">{{ num }}</span>
+                    {% elif num > products.number|add:'-3' and num < products.number|add:'3' %}
+                        <a href="?page={{ num }}&sort={{ sort }}{% if q %}&q={{ q }}{% endif %}">{{ num }}</a>
+                    {% endif %}
+                {% endfor %}
+                {% if products.has_next %}
+                    <a href="?page={{ products.next_page_number }}&sort={{ sort }}{% if q %}&q={{ q }}{% endif %}">→</a>
+                {% endif %}
+            </div>
+            {% endif %}
+
+            {% else %}
+            <div class="empty-state">
+                <div class="emoji">Пошук</div>
+                <h3>Нічого не знайдено</h3>
+                <p>Спробуйте змінити фільтри або пошуковий запит</p>
+                <a href="/catalog/" class="btn btn-primary" style="margin-top:1.5rem;">Переглянути всі товари</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+function applySort(val) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('sort', val);
+    url.searchParams.delete('page');
+    window.location.href = url.toString();
+}
+</script>
+
+{% endblock %}

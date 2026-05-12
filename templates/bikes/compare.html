@@ -1,0 +1,390 @@
+{% extends 'base.html' %}
+{% block title %}Порівняння — VeloUkraine{% endblock %}
+
+{% block extra_css %}
+<style>
+.compare-page { padding: 2.5rem 0 5rem; }
+.compare-title {
+    font-family: var(--font-head);
+    font-weight: 900;
+    text-align: center;
+    font-size: 1.75rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text);
+    margin-bottom: 2.5rem;
+}
+.compare-controls{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap: 12px;
+    margin: -1.25rem 0 1.5rem;
+    flex-wrap: wrap;
+}
+.diff-toggle{
+    display:inline-flex;
+    align-items:center;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    background: #fff;
+    border-radius: 999px;
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-size: 0.72rem;
+    color: var(--text2);
+    user-select: none;
+    cursor: pointer;
+}
+.diff-toggle input{ width: 18px; height: 18px; accent-color: var(--accent2); cursor:pointer; }
+.diff-note{
+    color: var(--text3);
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-align: center;
+}
+.compare-specs__row.is-same { display: none; }
+.compare-empty {
+    text-align: center;
+    padding: 4rem 1rem;
+    color: var(--text2);
+    max-width: 480px;
+    margin: 0 auto 3rem;
+}
+.compare-empty p { line-height: 1.6; margin-bottom: 1.25rem; }
+.compare-grid {
+    display: grid;
+    /* +1 column for left spec keys, so cards align with spec columns */
+    grid-template-columns: 140px repeat({% if products|length > 0 %}{{ products|length }}{% else %}1{% endif %}, minmax(0, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 2.5rem;
+    align-items: start;
+}
+.compare-grid__spacer { display: block; }
+@media (max-width: 900px) {
+    .compare-grid { grid-template-columns: 1fr; }
+    .compare-grid__spacer { display: none; }
+}
+.compare-card {
+    position: relative;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem 1rem 1.25rem;
+    text-align: center;
+    min-width: 0;
+}
+.compare-card__remove {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 32px;
+    height: 32px;
+    border: 1px solid var(--border);
+    background: #fff;
+    color: var(--accent2);
+    border-radius: 10px;
+    font-size: 1.1rem;
+    line-height: 1;
+    cursor: pointer;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    z-index: 1;
+}
+.compare-card__remove:hover { border-color: var(--accent2); }
+.compare-card__img {
+    width: 100%;
+    height: 160px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    border-radius: var(--radius-sm);
+    margin-top: 0.5rem;
+    overflow: hidden;
+    padding: 12px;
+    box-sizing: border-box;
+}
+.compare-card__img img { max-width: 100%; max-height: 100%; object-fit: contain; background:#fff; display:block; }
+.compare-card__meta { font-size: 0.8rem; color: var(--text3); margin: 0.75rem 0 0.35rem; min-height: 1.2em; }
+.compare-card__name {
+    font-family: var(--font-head);
+    font-weight: 800;
+    font-size: 0.8rem;
+    line-height: 1.3;
+    text-transform: uppercase;
+    color: var(--text);
+    margin: 0;
+}
+.compare-specs { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+.compare-specs__row {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    font-size: 0.88rem;
+    border-bottom: 1px solid var(--border);
+}
+@media (max-width: 800px) {
+    .compare-specs__row { grid-template-columns: 1fr; }
+    .compare-specs__row .k { background: #f1f5f9; font-weight: 800; }
+}
+.compare-specs__row:last-child { border-bottom: none; }
+.compare-specs__row .k {
+    padding: 12px 1rem;
+    color: #64748b;
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    font-weight: 800;
+    border-right: 1px solid var(--border);
+    align-self: stretch;
+    display: flex;
+    align-items: center;
+}
+.compare-specs__row .v {
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat({% if products|length > 0 %}{{ products|length }}{% else %}1{% endif %}, minmax(0, 1fr));
+    align-items: stretch;
+}
+@media (max-width: 900px) {
+    .compare-specs__row .v { grid-template-columns: 1fr; }
+}
+.compare-specs__row .c {
+    padding: 12px 0.9rem;
+    color: var(--text2);
+    line-height: 1.5;
+    border-left: 1px solid var(--border);
+    font-size: 0.84rem;
+}
+@media (max-width: 900px) {
+    .compare-specs__row .c { border-left: none; border-top: 1px solid var(--border); }
+}
+.compare-specs__row .c:first-of-type { border-left: none; }
+.compare-hint {
+    text-align: center;
+    color: var(--text3);
+    font-size: 0.9rem;
+    max-width: 520px;
+    margin: 2rem auto 0;
+    line-height: 1.5;
+}
+.compare-specs__row--description .c {
+    text-align: left;
+    padding-top: 14px;
+    padding-bottom: 14px;
+    vertical-align: top;
+    font-size: 0.82rem;
+    line-height: 1.55;
+}
+.compare-prose {
+    max-height: 20rem;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-right: 6px;
+    margin: 0;
+    color: var(--text2);
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+.compare-prose p { margin: 0 0 0.65em; }
+.compare-prose p:last-child { margin-bottom: 0; }
+.compare-lead {
+    color: var(--text);
+    font-weight: 600;
+    font-size: 0.86rem;
+    line-height: 1.5;
+    margin: 0 0 0.5rem;
+    padding: 0.5rem 0.65rem;
+    background: #f1f5f9;
+    border-radius: 6px;
+    border-left: 3px solid var(--accent2);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="compare-page">
+    <div class="container">
+        <h1 class="compare-title">Порівняти</h1>
+
+        {% if not products %}
+        <div class="compare-empty">
+            <p>Тут з’являться вибрані товари. Відкрийте каталог і натисніть «Порівняти товари» на картці — внизу з’явиться панель вибору. Після вибору мінімум двох товарів натисніть «Порівняти товари» на панелі.</p>
+            <a href="{% url 'catalog' %}" class="btn btn-primary">Перейти в каталог</a>
+        </div>
+        {% else %}
+
+        <div class="compare-controls">
+            <label class="diff-toggle">
+                <input type="checkbox" id="compareDiffOnly">
+                Показати тільки відмінності
+            </label>
+            <div class="diff-note">Сховає характеристики, які однакові у всіх вибраних товарах.</div>
+        </div>
+
+        <div class="compare-grid">
+            <div class="compare-grid__spacer" aria-hidden="true"></div>
+            {% for p in products %}
+            <div class="compare-card">
+                <a class="compare-card__remove" href="{{ p.compare_remove_url }}" title="Прибрати" aria-label="Прибрати">×</a>
+                <div class="compare-card__img">
+                    {% if p.primary_image_src %}
+                        <img src="{{ p.primary_image_src }}" alt="{{ p.name }}">
+                    {% else %}
+                        <span style="color:var(--text3); font-size:0.8rem;">Немає фото</span>
+                    {% endif %}
+                </div>
+                <div class="compare-card__meta">
+                    {% if p.color or p.frame_size or p.available_sizes %}
+                        {{ p.color|default:'' }}{% if p.color and p.frame_size %} / {% endif %}{{ p.frame_size|default:'' }}{% if p.available_sizes %} · {{ p.available_sizes }}{% endif %}
+                    {% endif %}
+                </div>
+                <h2 class="compare-card__name">{{ p.name }}</h2>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="compare-specs">
+            <div class="compare-specs__row">
+                <div class="k">Ціна</div>
+                <div class="v">
+                    {% for p in products %}
+                    <div class="c"><strong style="color:var(--accent);">{{ p.price|floatformat:0 }} ₴</strong></div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% if products|length %}
+            <div class="compare-specs__row">
+                <div class="k">Бренд / категорія</div>
+                <div class="v">
+                    {% for p in products %}
+                    <div class="c">{% if p.brand %}{{ p.brand.name }}{% else %}—{% endif %} · {{ p.category.name }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            <div class="compare-specs__row">
+                <div class="k">Колір</div>
+                <div class="v">
+                    {% for p in products %}
+                    <div class="c">{{ p.color|default:"—" }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="compare-specs__row">
+                <div class="k">Розмір рами / розміри</div>
+                <div class="v">
+                    {% for p in products %}
+                    <div class="c">{% if p.frame_size %}{{ p.frame_size }}{% else %}—{% endif %}{% if p.available_sizes %}<br><span style="color:var(--text3); font-size:0.85em;">{{ p.available_sizes }}</span>{% endif %}</div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="compare-specs__row">
+                <div class="k">Колесо / швидкості / вага</div>
+                <div class="v">
+                    {% for p in products %}
+                    <div class="c">{% if p.wheel_size %}{{ p.wheel_size }}"{% else %}—{% endif %} · {% if p.speeds %}{{ p.speeds }}{% else %}—{% endif %} · {% if p.weight %}{{ p.weight }} кг{% else %}—{% endif %}</div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="compare-specs__row">
+                <div class="k">Матеріал / рама</div>
+                <div class="v">
+                    {% for p in products %}
+                    <div class="c">{{ p.frame_material|default:"—" }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="compare-specs__row">
+                <div class="k">Електро</div>
+                <div class="v">
+                    {% for p in products %}
+                    <div class="c">{% if p.motor_power or p.battery_capacity or p.range_km %}{{ p.motor_power|default:'' }}{% if p.battery_capacity %} · {{ p.battery_capacity }}{% endif %}{% if p.range_km %} · до {{ p.range_km }} км{% endif %}{% else %}—{% endif %}</div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="compare-specs__row">
+                <div class="k">Анонс</div>
+                <div class="v">
+                    {% for p in products %}
+                    <div class="c compare-specs__row--description">
+                        {% if p.short_description %}
+                            <p class="compare-lead" style="margin:0; border-left-color:var(--accent);">{{ p.short_description|truncatewords:45 }}</p>
+                        {% else %}
+                            <span style="color:var(--text3);">—</span>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="compare-specs__row">
+                <div class="k">Детальний опис</div>
+                <div class="v">
+                    {% for p in products %}
+                    <div class="c compare-specs__row--description">
+                        {% if p.description %}
+                            <div class="compare-prose">{{ p.description|linebreaksbr }}</div>
+                        {% elif p.short_description %}
+                            <div class="compare-prose" style="color:var(--text3);">Розширеного опису немає; див. анонс.</div>
+                        {% else %}
+                            <span style="color:var(--text3);">—</span>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <p class="compare-hint">Потрібна допомога з вибором? Відкрийте <a href="#" onclick="toggleChat(); return false;" style="color:var(--accent2); font-weight:700;">AI-чат</a>.</p>
+
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(() => {
+  const toggle = document.getElementById('compareDiffOnly');
+  const root = document.querySelector('.compare-specs');
+  if (!toggle || !root) return;
+
+  const KEY = 'velo_compare_diff_only_v1';
+
+  const norm = (s) => {
+    if (!s) return '';
+    return String(s)
+      .replace(/\u00a0/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .toLowerCase();
+  };
+
+  const recompute = () => {
+    const rows = root.querySelectorAll('.compare-specs__row');
+    rows.forEach((row) => {
+      const cells = row.querySelectorAll('.v .c');
+      if (!cells.length) return;
+      const vals = Array.from(cells).map((c) => norm(c.textContent));
+      const first = vals[0];
+      const allSame = vals.every((v) => v === first);
+      row.classList.toggle('is-same', toggle.checked && allSame);
+    });
+  };
+
+  // restore state
+  try { toggle.checked = localStorage.getItem(KEY) === '1'; } catch (e) {}
+  recompute();
+
+  toggle.addEventListener('change', () => {
+    try { localStorage.setItem(KEY, toggle.checked ? '1' : '0'); } catch (e) {}
+    recompute();
+  });
+})();
+</script>
+{% endblock %}

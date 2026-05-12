@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}Оплату успішно — VeloUkraine{% endblock %}
+
+{% block content %}
+<section class="container" style="padding: 2rem 2rem 5rem;">
+  <div style="max-width: 900px; margin: 0 auto;">
+    <h1 style="font-family:var(--font-head);font-weight:900;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:0.75rem;">Оплату успішно</h1>
+    <p style="color:var(--text2);margin-bottom:1.5rem;">Дякуємо! Ваше замовлення прийнято.</p>
+
+    <div style="border-top:1px solid var(--border);padding-top:1rem;">
+      <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+        <div>
+          <div style="color:var(--text3);font-weight:800;letter-spacing:0.12em;text-transform:uppercase;font-size:0.7rem;margin-bottom:6px;">Номер замовлення</div>
+          <div style="font-family:var(--font-head);font-weight:900;font-size:1.4rem;">#{{ order.id }}</div>
+        </div>
+        <div>
+          <div style="color:var(--text3);font-weight:800;letter-spacing:0.12em;text-transform:uppercase;font-size:0.7rem;margin-bottom:6px;">Статус</div>
+          <div style="font-weight:900;">{{ order.get_status_display }}</div>
+        </div>
+        <div>
+          <div style="color:var(--text3);font-weight:800;letter-spacing:0.12em;text-transform:uppercase;font-size:0.7rem;margin-bottom:6px;">Сума</div>
+          <div style="font-family:var(--font-head);font-weight:900;font-size:1.4rem;">{{ order.total_amount|floatformat:0 }} ₴</div>
+        </div>
+      </div>
+
+      <div style="margin-top:1.25rem; display:flex; gap:10px; flex-wrap:wrap;">
+        <a class="btn btn-primary" href="{% url 'catalog' %}">Повернутись в каталог</a>
+        <a class="btn btn-ghost" href="{% url 'profile' %}">Профіль</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+

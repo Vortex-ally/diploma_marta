@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block title %}Заявки — Напарник · VeloUkraine{% endblock %}
+
+{% block content %}
+<section class="container" style="padding: 2rem 2rem 5rem;">
+  <div style="max-width: 980px; margin: 0 auto;">
+    <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-end;">
+      <div>
+        <div style="color:var(--text3);font-weight:900;letter-spacing:0.10em;text-transform:uppercase;font-size:0.7rem;">Пост</div>
+        <h1 style="font-family:var(--font-head);font-weight:900;margin-top:6px;">{{ post.city }} · {{ post.get_ride_type_display }}</h1>
+        <div style="color:var(--text2);margin-top:6px;">{{ post.start_at }}</div>
+      </div>
+      <a class="btn btn-ghost" href="{% url 'ride_detail' post.id %}">Назад</a>
+    </div>
+
+    <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:1rem;">
+      {% if requests %}
+        <div style="display:grid;gap:10px;">
+          {% for r in requests %}
+            <div style="border:1px solid var(--border);background:var(--surface);box-shadow:var(--shadow);padding:12px;">
+              <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;">
+                <div>
+                  <div style="font-weight:900;">{{ r.requester.username }}</div>
+                  <div style="color:var(--text3);margin-top:4px;">Статус: <strong>{{ r.get_status_display }}</strong></div>
+                </div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                  <form method="post" action="{% url 'ride_request_action' r.id 'accept' %}">
+                    {% csrf_token %}
+                    <button class="btn btn-primary btn-sm" type="submit">Прийняти</button>
+                  </form>
+                  <form method="post" action="{% url 'ride_request_action' r.id 'decline' %}">
+                    {% csrf_token %}
+                    <button class="btn btn-ghost btn-sm" type="submit">Відхилити</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div style="color:var(--text2);">Поки немає заявок.</div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}
+

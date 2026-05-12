@@ -1,0 +1,799 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}VeloUkraine — Велосипеди та Екіпірування в Україні{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ─── HERO ─── */
+.hero {
+    position: relative;
+    min-height: 90vh;
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    background: transparent;
+}
+
+.hero-bg {
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(ellipse 60% 80% at 70% 50%, rgba(0,0,0,0.04) 0%, transparent 70%),
+        radial-gradient(ellipse 40% 60% at 20% 80%, rgba(37,99,235,0.06) 0%, transparent 60%),
+        linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0) 100%);
+    z-index: 0;
+}
+
+.hero-grid-lines {
+    position: absolute;
+    inset: 0;
+    background-image:
+        linear-gradient(rgba(0,0,0,0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,0,0,0.05) 1px, transparent 1px);
+    background-size: 60px 60px;
+    z-index: 0;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 1;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4rem;
+    align-items: center;
+    width: 100%;
+}
+
+.hero-text { max-width: 600px; }
+
+.hero-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #f4f4f5;
+    border: 1px solid var(--border);
+    border-radius: 50px;
+    padding: 6px 16px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text2);
+    margin-bottom: 1.5rem;
+    animation: fadeInUp 0.6s ease both;
+}
+
+.hero-title {
+    font-family: var(--font-display);
+    font-size: clamp(4rem, 8vw, 7rem);
+    line-height: 0.95;
+    letter-spacing: 3px;
+    margin-bottom: 1.5rem;
+    animation: fadeInUp 0.6s ease 0.1s both;
+}
+
+.hero-title .line2 { color: var(--accent2); display: block; }
+.hero-title .accent-word { color: var(--brand); }
+.hero-title .line3 { color: var(--text2); font-size: 0.6em; display: block; letter-spacing: 8px; }
+
+.hero-desc {
+    color: var(--text2);
+    font-size: 1.1rem;
+    line-height: 1.7;
+    margin-bottom: 2.5rem;
+    animation: fadeInUp 0.6s ease 0.2s both;
+}
+
+.hero-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    animation: fadeInUp 0.6s ease 0.3s both;
+}
+
+.hero-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-top: 3rem;
+    animation: fadeInUp 0.6s ease 0.4s both;
+}
+
+.stat-item { text-align: center; }
+
+.stat-num {
+    font-family: var(--font-display);
+    font-size: 2.5rem;
+    color: var(--text);
+    line-height: 1;
+}
+
+.stat-label { color: var(--text2); font-size: 0.8rem; margin-top: 4px; }
+
+.hero-visual {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: fadeInRight 0.8s ease 0.2s both;
+}
+
+.hero-bike-display {
+    position: relative;
+    width: 100%;
+    height: 560px;
+}
+
+.bike-circle {
+    position: absolute;
+    border-radius: 50%;
+    border: 1px solid rgba(20,184,166,0.18);
+}
+
+.bike-circle:nth-child(1) { width: 400px; height: 400px; top: 50%; left: 50%; transform: translate(-50%,-50%); animation: rotateSlow 20s linear infinite; }
+.bike-circle:nth-child(2) { width: 300px; height: 300px; top: 50%; left: 50%; transform: translate(-50%,-50%); animation: rotateSlow 15s linear infinite reverse; border-color: rgba(96,165,250,0.12); }
+.bike-circle:nth-child(3) { width: 200px; height: 200px; top: 50%; left: 50%; transform: translate(-50%,-50%); animation: rotateSlow 10s linear infinite; border-color: rgba(20,184,166,0.22); }
+
+@keyframes rotateSlow { from { transform: translate(-50%,-50%) rotate(0deg); } to { transform: translate(-50%,-50%) rotate(360deg); } }
+
+.hero-photo-square {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 380px;
+    height: 380px;
+    border-radius: 18px;
+    overflow: hidden;
+    border: 2px solid rgba(255,255,255,0.85);
+    box-shadow:
+        0 18px 48px rgba(15, 23, 42, 0.12),
+        0 0 0 1px rgba(20, 184, 166, 0.2);
+    z-index: 2;
+    animation: float 4s ease-in-out infinite;
+}
+.hero-photo-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    cursor: zoom-in;
+}
+.hero-photo-link:hover { box-shadow: 0 22px 60px rgba(15, 23, 42, 0.16), 0 0 0 1px rgba(0,0,0,0.06); }
+
+.hero-photo-square.primary { z-index: 2; }
+
+.hero-photo-secondary {
+    position: absolute;
+    right: 2%;
+    top: 18%;
+    width: 180px;
+    height: 180px;
+    border-radius: 18px;
+    overflow: hidden;
+    background: rgba(255,255,255,0.9);
+    border: 2px solid rgba(255,255,255,0.9);
+    box-shadow:
+        0 16px 44px rgba(15, 23, 42, 0.14),
+        0 0 0 1px rgba(37, 99, 235, 0.18);
+    z-index: 3;
+}
+.hero-photo-secondary.hero-photo-link,
+.hero-photo-tertiary.hero-photo-link { cursor: zoom-in; }
+.hero-photo-secondary img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 40%;
+    display: block;
+}
+
+.hero-photo-tertiary {
+    position: absolute;
+    left: 2%;
+    top: 18%;
+    width: 180px;
+    height: 180px;
+    border-radius: 18px;
+    overflow: hidden;
+    background: rgba(255,255,255,0.9);
+    border: 2px solid rgba(255,255,255,0.9);
+    box-shadow:
+        0 16px 44px rgba(15, 23, 42, 0.14),
+        0 0 0 1px rgba(15, 118, 110, 0.18);
+    z-index: 3;
+}
+.hero-photo-tertiary img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 40%;
+    display: block;
+}
+
+.hero-photo-square img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 35%;
+    display: block;
+}
+
+@keyframes float {
+    0%, 100% { transform: translate(-50%, -50%) translateY(0); }
+    50% { transform: translate(-50%, -50%) translateY(-15px); }
+}
+
+.floating-card {
+    position: absolute;
+    background: rgba(255,255,255,0.90);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    backdrop-filter: blur(10px);
+    box-shadow: var(--shadow);
+    font-size: 0.8rem;
+    z-index: 3;
+    animation: float 5s ease-in-out infinite;
+    text-decoration: none;
+    color: inherit;
+}
+
+.floating-card--link { cursor: pointer; }
+.floating-card--link:hover { border-color: rgba(15, 118, 110, 0.35); box-shadow: 0 18px 48px rgba(15, 23, 42, 0.12); }
+
+.floating-card--price { top: 10%; right: 5%; animation-delay: 0s; }
+/* Place away from both side preview photos */
+.floating-card--price { bottom: 10%; right: 6%; top: auto; animation-delay: 0s; }
+.floating-card--range { bottom: 10%; left: 6%; top: auto; animation-delay: 1.5s; }
+
+.floating-card .fc-label { color: var(--text3); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.5px; }
+.floating-card .fc-value { color: var(--text); font-weight: 700; font-size: 1rem; font-family: var(--font-head); }
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInRight {
+    from { opacity: 0; transform: translateX(24px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+/* category quick links removed per request */
+
+/* ─── BIKE CATEGORY CARDS ─── */
+.bike-cats {
+    padding: 6rem 0;
+}
+
+.bike-cat-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+}
+
+.bike-cat-card {
+    position: relative;
+    border-radius: 20px;
+    overflow: hidden;
+    cursor: pointer;
+    text-decoration: none;
+    display: block;
+    aspect-ratio: 3/4;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    transition: all 0.4s;
+}
+
+.bike-cat-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.1); border-color: #d4d4d8; }
+
+.bcc-bg {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 7rem;
+    opacity: 0.15;
+    transition: all 0.4s;
+}
+
+.bike-cat-card:hover .bcc-bg { opacity: 0.25; transform: scale(1.1); }
+
+.bcc-gradient {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60%;
+    background: linear-gradient(transparent, rgba(15,23,42,0.82));
+}
+
+.bcc-content {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 1.5rem;
+}
+
+.bcc-tag {
+    background: rgba(255,255,255,0.2);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.4);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding: 3px 10px;
+    border-radius: 50px;
+    display: inline-block;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+}
+
+.bcc-title {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    letter-spacing: 2px;
+    color: #ffffff;
+    line-height: 1;
+    margin-bottom: 6px;
+    text-shadow: 0 10px 30px rgba(0,0,0,0.45);
+}
+
+.bcc-count {
+    color: rgba(255,255,255,0.92);
+    font-size: 0.8rem;
+    text-shadow: 0 8px 24px rgba(0,0,0,0.35);
+}
+
+.bike-cat-card.featured {
+    grid-row: span 1;
+    aspect-ratio: 3/4;
+}
+
+.bike-cat-card.featured .bcc-bg { font-size: 7rem; }
+.bike-cat-card.featured .bcc-title { font-size: 2rem; }
+
+/* ─── FEATURED PRODUCTS ─── */
+.featured-section { padding: 6rem 0; }
+
+/* ─── FAQ (популярні питання) ─── */
+.faq-section {
+    padding: 4.5rem 0 3rem;
+    background: rgba(255,255,255,0.55);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+}
+
+.faq-list {
+    max-width: 720px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.faq-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.faq-item[open] {
+    border-color: #d4d4d8;
+    box-shadow: var(--shadow);
+}
+
+.faq-item summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 1rem 1.25rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    user-select: none;
+}
+
+.faq-item summary::-webkit-details-marker { display: none; }
+.faq-item summary::after {
+    content: '+';
+    flex-shrink: 0;
+    width: 1.5rem;
+    height: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    background: #f4f4f5;
+    color: var(--text);
+    font-weight: 700;
+    font-size: 1.1rem;
+    line-height: 1;
+    transition: transform 0.2s;
+}
+
+.faq-item[open] summary::after {
+    content: '−';
+    transform: rotate(0deg);
+}
+
+.faq-item summary:hover {
+    background: rgba(20, 184, 166, 0.06);
+}
+
+.faq-answer {
+    padding: 0 1.25rem 1.15rem;
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.55;
+    color: var(--text2);
+    border-top: 1px solid var(--border);
+    padding-top: 0.85rem;
+}
+
+/* ─── TRAILS PREVIEW ─── */
+.trails-preview { padding: 6rem 0; }
+
+.trails-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+}
+
+.trail-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    transition: all 0.3s;
+    text-decoration: none;
+    color: var(--text);
+    display: block;
+}
+
+.trail-card:hover { transform: translateY(-2px); border-color: #d4d4d8; box-shadow: var(--shadow); }
+
+.trail-img {
+    height: 180px;
+    background: var(--bg3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    position: relative;
+    overflow: hidden;
+}
+.trail-img-fallback {
+    color: var(--text3);
+    font-weight: 700;
+    font-size: 0.85rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.trail-img::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(transparent 50%, rgba(10,10,15,0.6));
+}
+
+.trail-info { padding: 1.25rem; }
+
+.trail-name {
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+}
+
+.trail-meta {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 12px;
+}
+
+.trail-meta span { color: var(--text2); font-size: 0.8rem; display: flex; align-items: center; gap: 4px; }
+
+.difficulty-badge {
+    padding: 3px 10px;
+    border-radius: 50px;
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+
+.diff-easy { background: rgba(46,204,113,0.15); color: var(--green); }
+.diff-medium { background: #e4e4e7; color: var(--text2); }
+.diff-hard { background: rgba(231,76,60,0.15); color: var(--red); }
+.diff-extreme { background: rgba(155,89,182,0.15); color: #9b59b6; }
+
+/* ─── BRANDS ─── */
+.brands-section { padding: 4rem 0; }
+.brands-grid { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+.brand-pill {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem 2rem;
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--text2);
+    text-decoration: none;
+    transition: all 0.2s;
+    letter-spacing: 1px;
+}
+.brand-pill:hover { border-color: var(--accent2); color: var(--btn-green-deep); background: #fff; }
+
+@media (max-width: 1024px) {
+    .hero-content { grid-template-columns: 1fr; }
+    .hero-visual { display: none; }
+    .bike-cat-grid { grid-template-columns: repeat(2, 1fr); }
+    .bike-cat-card.featured { grid-row: span 1; aspect-ratio: 3/4; }
+    .trails-grid { grid-template-columns: 1fr 1fr; }
+}
+
+@media (max-width: 1280px) {
+    .hero-photo-secondary,
+    .hero-photo-tertiary {
+        width: 160px;
+        height: 160px;
+        top: 16%;
+    }
+}
+
+@media (max-width: 768px) {
+    .bike-cat-grid { grid-template-columns: 1fr 1fr; }
+    .trails-grid { grid-template-columns: 1fr; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-grid-lines"></div>
+    <div class="hero-content">
+        <div class="hero-text">
+            <span class="hero-label">VeloUkraine · розумний підбір</span>
+            <h1 class="hero-title">
+                ВЕЛОСИПЕД
+                <span class="line2">ПІД ТВОЇ <span class="accent-word">ПРАВИЛА</span></span>
+                <span class="line3">AI · каталог · траси</span>
+            </h1>
+            <p class="hero-desc">
+                Підбір через AI за бюджетом і стилем катання, каталог велосипедів і екіпірування, маршрути по містах.
+            </p>
+            <div class="hero-actions">
+                <button type="button" class="btn btn-primary" onclick="toggleChat()">
+                    Підібрати з AI{% if not user.is_authenticated %} (демо){% endif %}
+                </button>
+                <a href="{% url 'cyclist_test' %}" class="btn btn-outline">Тест: який ти велосипедист?</a>
+            </div>
+            <div class="hero-stats">
+                <div class="stat-item">
+                    <div class="stat-num">{{ site_stats.bikes_count }}</div>
+                    <div class="stat-label">велосипедів online</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-num">{{ site_stats.trails_count }}</div>
+                    <div class="stat-label">маршрутів у базі</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-num">{{ site_stats.brands_count }}</div>
+                    <div class="stat-label">брендів</div>
+                </div>
+            </div>
+        </div>
+        <div class="hero-visual">
+            <div class="hero-bike-display">
+                <div class="bike-circle"></div>
+                <div class="bike-circle"></div>
+                <div class="bike-circle"></div>
+                <a class="hero-photo-square primary hero-photo-link" href="{% static 'images/hero-velodrome.png' %}" target="_blank" rel="noopener" aria-label="Відкрити фото 1">
+                    <img src="{% static 'images/hero-velodrome.png' %}" alt="Велотрек" width="380" height="380" loading="eager">
+                </a>
+                <a class="hero-photo-secondary hero-photo-link" href="{% static 'images/hero-velodrome-2.png' %}" target="_blank" rel="noopener" aria-label="Відкрити фото 2">
+                    <img src="{% static 'images/hero-velodrome-2.png' %}" alt="Велотрек (фото 2)" width="180" height="180" loading="eager">
+                </a>
+                <a class="hero-photo-tertiary hero-photo-link" href="{% static 'images/hero-velodrome-3.png' %}" target="_blank" rel="noopener" aria-label="Відкрити фото 3">
+                    <img src="{% static 'images/hero-velodrome-3.png' %}" alt="Велотрек (фото 3)" width="180" height="180" loading="eager">
+                </a>
+                <a class="floating-card floating-card--price floating-card--link" href="{% url 'catalog' %}?price_min=3999&sort=price_asc" aria-label="Перейти в каталог">
+                    <div class="fc-label">Найкраща ціна</div>
+                    <div class="fc-value">від 3 999 ₴</div>
+                </a>
+                {% if user.is_authenticated %}
+                    <a class="floating-card floating-card--range floating-card--link" href="{% url 'trails' %}" aria-label="Перейти до велотрас">
+                        <div class="fc-label">Найкращі траси</div>
+                        <div class="fc-value">по Україні</div>
+                    </a>
+                {% else %}
+                    <a class="floating-card floating-card--range floating-card--link" href="{% url 'login' %}?next={% url 'trails' %}" aria-label="Увійти, щоб відкрити траси">
+                        <div class="fc-label">Найкращі траси</div>
+                        <div class="fc-value">Увійти, щоб відкрити</div>
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- BIKE CATEGORIES -->
+<section class="bike-cats">
+    <div class="container">
+        <div class="section-header">
+            <div>
+                <h2 class="section-title">КАТЕГОРІЇ <span class="accent">ВЕЛОСИПЕДІВ</span></h2>
+                <p class="section-sub">Обирайте за стилем катання та потребами</p>
+            </div>
+            <a href="/catalog/" class="btn btn-ghost">Всі категорії →</a>
+        </div>
+        <div class="bike-cat-grid">
+            <a href="/catalog/road/" class="bike-cat-card featured">
+                <div class="bcc-bg" style="background-image: url('{% static 'images/categories/road.png' %}'); background-size: cover; background-position: center; opacity: 1;"></div>
+                <div class="bcc-gradient"></div>
+                <div class="bcc-content">
+                    <div class="bcc-tag">Топ продажів</div>
+                    <div class="bcc-title">ШОСЕЙНІ</div>
+                    <div class="bcc-count">Шосе · Швидкість · Тривалі заїзди</div>
+                </div>
+            </a>
+            <a href="/catalog/gravel/" class="bike-cat-card">
+                <div class="bcc-bg" style="background-image: url('{% static 'images/categories/gravel.png' %}'); background-size: cover; background-position: center; opacity: 1;"></div>
+                <div class="bcc-gradient"></div>
+                <div class="bcc-content">
+                    <div class="bcc-tag">MTB</div>
+                    <div class="bcc-title">ГРАВІЙНІ</div>
+                    <div class="bcc-count">Позашляхові · Гравій · Гнучка траса</div>
+                </div>
+            </a>
+            <a href="/catalog/kids/" class="bike-cat-card">
+                <div class="bcc-bg" style="background-image: url('{% static 'images/categories/kids.png' %}'); background-size: cover; background-position: center; opacity: 1;"></div>
+                <div class="bcc-gradient"></div>
+                <div class="bcc-content">
+                    <div class="bcc-tag">Безпечно</div>
+                    <div class="bcc-title">ДИТЯЧІ</div>
+                    <div class="bcc-count">12" — 24" · Від 3 до 14 років</div>
+                </div>
+            </a>
+            <a href="/catalog/electric/" class="bike-cat-card">
+                <div class="bcc-bg" style="background-image: url('{% static 'images/categories/electric.png' %}'); background-size: cover; background-position: center; opacity: 1;"></div>
+                <div class="bcc-gradient"></div>
+                <div class="bcc-content">
+                    <div class="bcc-tag">Новинка</div>
+                    <div class="bcc-title">ЕЛЕКТРО</div>
+                    <div class="bcc-count">До 120 км · 250–750 Вт</div>
+                </div>
+            </a>
+        </div>
+    </div>
+</section>
+
+<!-- FEATURED BIKES -->
+{% if featured_bikes %}
+<section class="featured-section">
+    <div class="container">
+        <div class="section-header">
+            <div>
+                <h2 class="section-title">РЕКОМЕНДОВАНІ <span class="accent">ВЕЛОСИПЕДИ</span></h2>
+                <p class="section-sub">Підібрані нашими експертами</p>
+            </div>
+            <a href="/catalog/" class="btn btn-ghost">Всі велосипеди →</a>
+        </div>
+        <div class="products-grid">
+            {% for bike in featured_bikes %}
+            <div class="product-card">
+                <div class="badges">
+                    {% if bike.is_new %}<span class="badge badge-new">НОВИНКА</span>{% endif %}
+                    {% if bike.discount_percent > 0 %}<span class="badge badge-sale">-{{ bike.discount_percent }}%</span>{% endif %}
+                    {% if bike.is_featured %}<span class="badge badge-hit">ХІТ</span>{% endif %}
+                </div>
+                <div class="product-img-wrap{% if bike.category.bike_type == 'electric' %} electric-bike-photo-wrap{% endif %}">
+                    {% if bike.image_src %}
+                        <img src="{{ bike.image_src }}" alt="{{ bike.name }}" loading="lazy">
+                    {% else %}
+                        <div class="product-img-placeholder">Немає фото</div>
+                    {% endif %}
+                </div>
+                <div class="product-info">
+                    {% if bike.brand %}<div class="product-brand">{{ bike.brand.name }}</div>{% endif %}
+                    <div class="product-name"><a href="{% url 'product_detail' bike.slug %}">{{ bike.name }}</a></div>
+                    <div class="product-specs">
+                        {% if bike.wheel_size %}<span class="spec-tag">{{ bike.wheel_size }}"</span>{% endif %}
+                        {% if bike.speeds %}<span class="spec-tag">{{ bike.speeds }} швидк.</span>{% endif %}
+                        {% if bike.frame_material %}<span class="spec-tag">{{ bike.frame_material }}</span>{% endif %}
+                        {% if bike.weight %}<span class="spec-tag">{{ bike.weight }} кг</span>{% endif %}
+                    </div>
+                    <div class="product-rating">
+                        {% if bike.reviews_count %}
+                        <span class="stars">★★★★★</span>
+                        <span class="rating-count">{{ bike.rating }}</span>
+                        <span class="rating-num">{{ bike.reviews_count }} відг.</span>
+                        {% else %}
+                        <span class="rating-none">немає відгуків</span>
+                        {% endif %}
+                    </div>
+                    <div class="product-price">
+                        <span class="price-current">{{ bike.price|floatformat:0 }} ₴</span>
+                        {% if bike.old_price %}<span class="price-old">{{ bike.old_price|floatformat:0 }} ₴</span>{% endif %}
+                        {% if bike.discount_percent %}<span class="price-discount">-{{ bike.discount_percent }}%</span>{% endif %}
+                    </div>
+                </div>
+                <div class="product-actions" style="flex-wrap:wrap;">
+                    <a href="{% url 'product_detail' bike.slug %}" class="btn btn-primary btn-sm" style="flex:1; min-width:110px; justify-content:center;">Деталі</a>
+                    {% if user.is_authenticated %}
+                        <button type="button" class="btn btn-outline btn-sm" data-compare-add
+                            data-compare-id="{{ bike.id }}"
+                            data-compare-name="{{ bike.name|escapejs }}"
+                            data-compare-image="{{ bike.primary_image_src|default:''|escapejs }}"
+                            data-compare-url="{% url 'product_detail' bike.slug %}"
+                            style="flex:1; min-width:110px; justify-content:center; font-size:0.7rem; padding:8px 8px; white-space:normal; line-height:1.2;">Порівняти товари</button>
+                    {% else %}
+                        <a href="{% url 'login' %}?next={% url 'compare' %}" class="btn btn-outline btn-sm" style="flex:1; min-width:110px; justify-content:center; font-size:0.7rem; padding:8px 8px; white-space:normal; line-height:1.2;">
+                            Порівняти
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- ПОПУЛЯРНІ ПИТАННЯ -->
+<section class="faq-section">
+    <div class="container">
+        <div class="section-header">
+            <div>
+                <h2 class="section-title">ПОПУЛЯРНІ <span class="accent">ПИТАННЯ</span></h2>
+                <p class="section-sub">Коротко про екіпірування та поведінку в групі</p>
+            </div>
+        </div>
+        <div class="faq-list">
+            <details class="faq-item">
+                <summary>Чому під вело труси не вдягають звичайну нижню білизну?</summary>
+                <p class="faq-answer">У якісних шортах і бібах уже є вкладка (chamois) — вона прилягає до тіла так, щоб розподіляти тиск і вбирати вологу. Звичайна білизна додає шви, зминається й створює тертя саме там, де найчутливіше. Результат — натирання за годину, а не за сезон. Тому правило просте: труси — так, «звичайні» труси під ними — ні. Після прання — чисті, сухі, і в дорогу.</p>
+            </details>
+            <details class="faq-item">
+                <summary>Навіщо велосипедистам рукавиці, якщо на вулиці +25°?</summary>
+                <p class="faq-answer">Не через моду. При падінні першим до асфальту тягнуться долоні — без рукавиць це шкіра проти наждачки. Плюс гель або поролон гасить вібрацію на довгих спусках і не дає мозолів від ручок. Влітку беруть короткі пальці — вентиляція є, захист теж.</p>
+            </details>
+            <details class="faq-item">
+                <summary>Як не виглядати новачком на першій груповій поїздці?</summary>
+                <p class="faq-answer">Уточніть темп і дистанцію заздалегідь, візьміть воду й легкий перекус, не лізьте вперед без потреби й не гальмуйте різко в середині колони. Якщо не знаєте жестів — їдьте з краю й питайте. Досвід приходить з другого заїзду, перший — для знайомства.</p>
+            </details>
+            <details class="faq-item">
+                <summary>Де на сайті зібране все екіпірування — від шолома до сумки на раму?</summary>
+                <p class="faq-answer">У каталозі в розділі «Екіпірування»: шоломи, форма, туфлі, ліхтарі, окуляри, сумки й інше. Зліва можна звузити категорію й відфільтрувати ціну; з картки товару можна додати позиції до порівняння. Якщо сумніваєтесь між моделями — загляньте в характеристики або спитайте помічника на сайті.</p>
+            </details>
+        </div>
+    </div>
+</section>
+
+<!-- AI BANNER -->
+<!-- AI promo banner removed per request -->
+
+<!-- Trails preview removed per request -->
+
+<!-- BRANDS -->
+{% if brands %}
+<!-- brands section removed per request -->
+{% endif %}
+
+{% endblock %}

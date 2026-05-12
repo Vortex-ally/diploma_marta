@@ -1,0 +1,968 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load size_utils %}
+{% block title %}{{ product.name }} — VeloUkraine{% endblock %}
+
+{% block extra_css %}
+<style>
+.detail-wrap { padding: 2rem 0 6rem; }
+
+.breadcrumb { display: flex; gap: 8px; align-items: center; color: var(--text3); font-size: 0.8rem; margin-bottom: 2rem; flex-wrap: wrap; }
+.breadcrumb a { color: var(--text2); text-decoration: none; }
+.breadcrumb a:hover { color: var(--accent2); }
+
+.detail-grid {
+    display: grid;
+    grid-template-columns: 1.35fr 0.65fr;
+    gap: 4rem;
+    margin-bottom: 5rem;
+}
+
+/* Image */
+.product-gallery { position: sticky; top: 90px; }
+.main-image {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    aspect-ratio: 4/3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    margin-bottom: 1rem;
+}
+.main-image[data-zoom="on"] { cursor: zoom-out; }
+.main-image[data-zoom="off"] { cursor: zoom-in; }
+.main-image .no-photo-label { font-size: 0.95rem; color: var(--text3); font-weight: 600; }
+.main-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 16px;
+    background: #fff !important;
+    transform-origin: 50% 50%;
+    transition: transform 180ms ease;
+    will-change: transform;
+}
+.main-image[data-zoom="on"] img { transform: scale(1.75); }
+
+.thumbs { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 6px; -webkit-overflow-scrolling: touch; scrollbar-width: thin; }
+.thumbs::-webkit-scrollbar { height: 5px; }
+.thumbs::-webkit-scrollbar-thumb { background: var(--border); border-radius: 999px; }
+.thumb {
+    width: 80px;
+    height: 80px;
+    background: #fff;
+    border: 2px solid var(--border);
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex: 0 0 auto;
+    padding: 0;
+}
+.thumb { appearance: none; -webkit-appearance: none; border-color: var(--border); }
+.thumb:hover, .thumb.active { border-color: var(--accent2); }
+.thumb img { width: 100%; height: 100%; object-fit: contain; background:#fff; padding: 6px; border-radius: var(--radius-sm); font-size: 0; }
+.related-section .product-img-placeholder.no-photo-tiny { font-size: 0.75rem; color: var(--text3); padding: 1rem; text-align: center; }
+
+/* Info */
+.product-detail-info {}
+.detail-brand { color: var(--text2); font-weight: 600; font-size: 0.875rem; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 8px; }
+.detail-name { font-family: var(--font-head); font-weight: 800; font-size: 2.2rem; line-height: 1.2; margin-bottom: 1rem; }
+
+.detail-badges { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 1.5rem; }
+
+.detail-rating { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 1.5rem; }
+.detail-rating-meta { color: var(--text3); font-size: 0.9rem; font-weight: 600; }
+.detail-rating-link { font-size: 0.85rem; font-weight: 700; color: var(--accent2); margin-left: 4px; }
+.detail-rating-empty { color: var(--text2); font-size: 0.9rem; }
+.detail-rating-empty a { color: var(--accent2); font-weight: 700; }
+.detail-stars { color: #a16207; font-size: 1.25rem; }
+
+.detail-price-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.detail-price {
+    font-family: var(--font-display);
+    font-size: 3rem;
+    color: var(--text);
+    line-height: 1;
+    margin-bottom: 8px;
+}
+
+.detail-price-old { color: var(--text3); text-decoration: line-through; font-size: 1.1rem; margin-bottom: 12px; }
+
+.stock-indicator { display: flex; align-items: center; gap: 8px; font-size: 0.875rem; margin-top: 12px; }
+.stock-dot { width: 10px; height: 10px; border-radius: 50%; }
+.in-stock .stock-dot { background: var(--green); box-shadow: 0 0 8px var(--green); }
+.out-stock .stock-dot { background: var(--red); }
+.in-stock { color: var(--green); }
+
+.detail-actions { display: flex; flex-direction: column; gap: 12px; margin-bottom: 2rem; }
+
+/* Retail-like right panel */
+.pdp-meta { color: var(--text3); font-size: 0.92rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+.pdp-title { font-family: var(--font-head); font-weight: 900; letter-spacing: 0.06em; text-transform: uppercase; font-size: 1.55rem; line-height: 1.18; margin: 0.35rem 0 1rem; }
+.pdp-block { padding-top: 1rem; border-top: 1px solid var(--border); margin-top: 1rem; }
+.pdp-block-title { font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase; font-size: 0.9rem; color: var(--text2); margin-bottom: 0.85rem; }
+.pdp-features { margin: 0; padding-left: 1.25rem; color: var(--text2); font-size: 1.05rem; line-height: 1.65; }
+.pdp-features li { margin-bottom: 0.45rem; }
+.pdp-step { margin-top: 0.95rem; }
+.pdp-step-label { font-weight: 900; letter-spacing: 0.10em; text-transform: uppercase; font-size: 0.9rem; color: var(--text2); }
+.pdp-step-value { color: var(--text3); font-size: 1.05rem; margin-top: 6px; }
+.pdp-cta { margin-top: 1rem; }
+.pdp-cta .btn { width: 100%; justify-content: center; }
+.pdp-compare-link { display:block; margin-top: 1rem; font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase; font-size: 1.15rem; color: var(--accent2); text-decoration: none; text-align: left; }
+.pdp-compare-link:hover { text-decoration: underline; }
+
+/* Specs */
+.specs-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+}
+
+.specs-title {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: 0.875rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text);
+}
+
+.spec-row {
+    display: flex;
+    padding: 10px 1.25rem;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.875rem;
+}
+
+.spec-row:last-child { border-bottom: none; }
+.spec-key { color: var(--text2); width: 150px; flex-shrink: 0; }
+.spec-val { color: var(--text); font-weight: 500; }
+
+/* Sizes */
+.sizes-block {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    margin-bottom: 1.25rem;
+}
+.sizes-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 0.75rem;
+}
+.sizes-head h3 {
+    font-family: var(--font-head);
+    font-weight: 800;
+    font-size: 0.9rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text);
+}
+.size-chips { display:flex; flex-wrap:wrap; gap:8px; }
+.size-chip {
+    padding: 6px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    font-weight: 700;
+    font-size: 0.82rem;
+    color: var(--text);
+}
+.size-pick-grid { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+.size-box {
+    width: 86px;
+    height: 52px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #b7c3d7;
+    background: #fff;
+    color: #94a3b8;
+    font-weight: 800;
+    font-size: 1.05rem;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    user-select: none;
+    transition: border-color 0.15s, color 0.15s, box-shadow 0.15s, transform 0.12s;
+}
+.size-box:hover { transform: translateY(-1px); border-color: var(--accent2); color: var(--accent2); }
+.size-box.active {
+    border-color: var(--accent2);
+    color: var(--accent2);
+    box-shadow: 0 10px 24px rgba(37,99,235,0.18);
+}
+.size-link {
+    display: inline-block;
+    margin-top: 10px;
+    color: var(--accent2);
+    font-weight: 700;
+    text-decoration: none;
+}
+.size-link:hover { text-decoration: underline; }
+
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    padding: 1.25rem;
+}
+.modal-backdrop.open { display: flex; }
+.modal {
+    width: min(720px, 100%);
+    background: #fff;
+    border-radius: 18px;
+    border: 1px solid var(--border);
+    box-shadow: 0 24px 70px rgba(15, 23, 42, 0.25);
+    overflow: hidden;
+}
+.modal-head {
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    border-bottom: 1px solid var(--border);
+}
+.modal-head strong { font-family: var(--font-head); letter-spacing: 0.08em; text-transform: uppercase; font-size: 0.85rem; color: var(--text); }
+.modal-close {
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    background: #fff;
+    cursor: pointer;
+    font-size: 1rem;
+}
+.modal-body { padding: 14px 16px 18px; }
+.size-note { color: var(--text3); font-size: 0.82rem; margin-top: 10px; line-height: 1.5; }
+.size-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+    font-size: 0.85rem;
+}
+.size-table th, .size-table td {
+    padding: 10px 10px;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+}
+.size-table th { color: var(--text2); font-family: var(--font-head); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; }
+
+/* Review form */
+.review-form {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    margin-top: 1rem;
+}
+.review-form h3 {
+    font-family: var(--font-head);
+    font-weight: 800;
+    margin-bottom: 1rem;
+}
+.form-row { margin-bottom: 0.9rem; }
+.form-row label { display:block; font-size:0.75rem; letter-spacing:0.08em; text-transform:uppercase; color: var(--text3); font-weight:800; margin-bottom:6px; }
+.form-actions { display:flex; gap:10px; flex-wrap:wrap; }
+
+/* Price comparison */
+.price-compare {
+    background: #f4f4f5;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
+
+.price-compare-title {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    font-family: var(--font-head);
+    font-weight: 700;
+    font-size: 0.875rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.store-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    gap: 1rem;
+}
+
+.store-row:last-child { border-bottom: none; }
+
+.store-row:first-of-type {
+    background: #fafafa;
+    border-left: 3px solid var(--accent2);
+}
+
+.store-info { flex: 1; }
+.store-name { font-weight: 600; font-size: 0.875rem; }
+.store-label { font-size: 0.7rem; color: var(--text2); font-weight: 700; margin-top: 2px; }
+
+.store-price { font-family: var(--font-head); font-weight: 800; font-size: 1.25rem; color: var(--text); }
+.store-row:first-of-type .store-price { color: var(--text); }
+
+.store-btn {
+    padding: 8px 18px;
+    background: linear-gradient(135deg, var(--btn-green) 0%, var(--btn-green-deep) 100%);
+    color: #fff;
+    border: none;
+    border-radius: 2px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background 0.2s;
+}
+.store-btn:hover { background: var(--btn-green-hover); }
+
+/* Description */
+.detail-desc {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.75rem 1.5rem 2rem;
+    color: var(--text2);
+    line-height: 1.75;
+    font-size: 0.95rem;
+    margin-bottom: 2rem;
+}
+.detail-desc__title {
+    font-family: var(--font-head);
+    font-weight: 800;
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--text);
+    margin: 0 0 0.5rem 0;
+}
+.detail-desc__subtitle { color: var(--text3); font-size: 0.88rem; margin: 0 0 1.25rem; line-height: 1.5; }
+.detail-desc__lead {
+    font-size: 1.02rem;
+    line-height: 1.7;
+    color: var(--text);
+    font-weight: 500;
+    margin: 0 0 1.5rem;
+    padding: 1.1rem 1.2rem 1.15rem 1.15rem;
+    background: linear-gradient(135deg, var(--surface2), var(--bg2));
+    border-left: 3px solid var(--accent2);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+.detail-desc__body { max-width: 75ch; }
+.detail-desc__body p { margin: 0 0 1em; }
+.detail-desc__body p:last-child { margin-bottom: 0; }
+.detail-desc__body ul, .detail-desc__body ol { margin: 0.75em 0 0.75em 1.25rem; }
+.detail-desc__body li { margin-bottom: 0.45em; }
+.detail-desc--empty { color: var(--text3); font-style: italic; }
+
+/* Вело-сумки — аркуш характеристик як у retailer */
+.detail-desc--bags { padding-top: 2rem; border-top: 3px solid var(--accent2); border-radius: 0; }
+.detail-desc--bags .detail-desc__subtitle { margin-bottom: 1.25rem; }
+.bag-spec-sheet {
+    margin-top: 1.25rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+    background: var(--surface);
+}
+.bag-spec-row {
+    display: grid;
+    grid-template-columns: minmax(100px, 150px) 1fr;
+    gap: 1rem 1.5rem;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    align-items: start;
+}
+.bag-spec-row:last-child { border-bottom: none; }
+.bag-spec-k {
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text3);
+    line-height: 1.4;
+}
+.bag-spec-v { color: var(--text2); font-size: 0.92rem; line-height: 1.55; }
+.bag-spec-v ul {
+    margin: 0;
+    padding-left: 1.15rem;
+}
+.bag-spec-v li { margin-bottom: 0.35rem; }
+.bag-spec-v li:last-child { margin-bottom: 0; }
+.detail-desc__body-bags-follow { margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px dashed var(--border); color: var(--text2); line-height: 1.75; }
+@media (max-width: 560px) {
+    .bag-spec-row { grid-template-columns: 1fr; gap: 0.5rem; }
+}
+
+/* Підібрані траси для велосипеда */
+.trail-match-section {
+    margin-top: 2.5rem;
+    padding: 2rem 0 1rem;
+    border-top: 1px solid var(--border);
+}
+.trail-match-title {
+    font-family: var(--font-display);
+    font-size: 1.75rem;
+    letter-spacing: 2px;
+    margin-bottom: 0.5rem;
+}
+.trail-match-title .accent { color: var(--brand); }
+.trail-match-lead { color: var(--text3); font-size: 0.9rem; margin-bottom: 0.75rem; max-width: 52ch; }
+.trail-match-more { margin-bottom: 1.25rem; }
+.trail-match-link { font-weight: 700; color: var(--accent2); text-decoration: none; }
+.trail-match-link:hover { text-decoration: underline; }
+.trail-match-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+}
+@media (max-width: 1100px) { .trail-match-grid { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 720px) { .trail-match-grid { grid-template-columns: 1fr; } }
+
+.trail-match-card {
+    text-decoration: none;
+    color: inherit;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    display: grid;
+}
+.trail-match-cover {
+    height: 140px;
+    background: var(--bg3);
+    background-size: cover;
+    background-position: center;
+    position: relative;
+}
+.trail-match-cover::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(0,0,0,0.00) 0%, rgba(0,0,0,0.25) 100%);
+}
+.trail-match-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 2;
+    font-size: 0.68rem;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: rgba(255,255,255,0.92);
+    border: 1px solid var(--border);
+    padding: 4px 10px;
+    border-radius: 999px;
+    color: var(--text2);
+}
+.trail-match-city {
+    position: absolute;
+    bottom: 10px;
+    left: 10px;
+    z-index: 2;
+    font-size: 0.8rem;
+    color: #fff;
+    font-weight: 800;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.35);
+}
+.trail-match-body { padding: 14px; display:grid; gap: 8px; }
+.trail-match-name { font-family: var(--font-head); font-weight: 900; font-size: 1rem; line-height: 1.25; margin: 0; }
+.trail-match-stats { font-size: 0.82rem; color: var(--text3); font-weight: 700; }
+.trail-match-cta { margin-top: 2px; display:flex; gap: 10px; }
+.trail-match-cta .btn { width: 100%; justify-content: center; }
+
+/* Reviews */
+.reviews-section { margin-top: 3rem; }
+.reviews-title { font-family: var(--font-display); font-size: 2rem; letter-spacing: 2px; margin-bottom: 1.5rem; }
+
+.review-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+}
+
+.review-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
+.reviewer-name { font-weight: 600; }
+.review-stars { color: #a16207; }
+.review-date { color: var(--text3); font-size: 0.75rem; }
+.review-text { color: var(--text2); line-height: 1.6; font-size: 0.875rem; }
+
+/* Related */
+.related-section { padding: 4rem 0; border-top: 1px solid var(--border); }
+
+@media (max-width: 900px) {
+    .detail-grid { grid-template-columns: 1fr; }
+    .product-gallery { position: static; }
+}
+
+@media (max-width: 768px) {
+    .detail-wrap { padding: 1.25rem 0 4rem; }
+    .breadcrumb { margin-bottom: 1.25rem; }
+    .detail-grid { gap: 1.5rem; margin-bottom: 2.5rem; }
+    .detail-name { font-size: 1.55rem; }
+    .detail-price { font-size: 2.4rem; }
+    .detail-price-block { padding: 1.15rem; }
+    .main-image { border-radius: 16px; }
+    .thumb { width: 64px; height: 64px; }
+    .pdp-title { font-size: 1.25rem; }
+    .pdp-features { font-size: 1rem; }
+    .pdp-step-value { font-size: 1rem; }
+    .trail-match-section { padding-top: 1.5rem; }
+    .trail-match-title { font-size: 1.5rem; }
+    .trail-match-cover { height: 160px; }
+    .trail-match-card { border-radius: 16px; }
+}
+
+@media (max-width: 420px) {
+    .detail-price { font-size: 2.15rem; }
+    .thumb { width: 58px; height: 58px; }
+}
+
+.product-tags {
+    margin-top: 2.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+}
+.product-tags-title {
+    font-size: 0.85rem;
+    color: var(--text2);
+    margin-bottom: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 700;
+}
+.tags-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.tag-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 14px;
+    background: #f4f4f5;
+    color: var(--text);
+    border-radius: 50px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-decoration: none;
+    border: 1px solid var(--border);
+    transition: all 0.2s;
+}
+.tag-pill:hover {
+    background: #fff;
+    border-color: var(--accent2);
+    color: var(--btn-green-deep);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="detail-wrap">
+    <div class="container">
+
+        <div class="breadcrumb">
+            <a href="/">Головна</a> ›
+            <a href="/catalog/">Каталог</a> ›
+            {% if product.category %}
+                <a href="/catalog/{{ product.category.bike_type|default:product.category.gear_type }}/">{{ product.category.name }}</a> ›
+            {% endif %}
+            <span>{{ product.name }}</span>
+        </div>
+
+        <div class="detail-grid">
+
+            <!-- GALLERY -->
+            <div class="product-gallery">
+                {% if product_images and product_images.0.src %}
+                    {% with main_src=product_images.0.src %}
+                        <div class="main-image{% if product.category and product.category.bike_type == 'electric' %} electric-bike-photo-wrap{% endif %}" data-gallery="main">
+                            <img src="{{ main_src }}" alt="{{ product.name }}" data-gallery-main>
+                        </div>
+                        <div class="thumbs" data-gallery="thumbs" aria-label="Фото товару">
+                            <button class="thumb active" type="button" data-gallery-thumb data-src="{{ main_src }}" aria-label="Фото 1">
+                                <img src="{{ main_src }}" alt="" loading="lazy">
+                            </button>
+                            {% for img in product_images %}
+                                {% if not forloop.first %}
+                                    <button class="thumb" type="button" data-gallery-thumb data-src="{{ img.src }}" aria-label="Фото {{ forloop.counter }}">
+                                        <img src="{{ img.src }}" alt="" loading="lazy">
+                                    </button>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    {% endwith %}
+                {% else %}
+                    <div class="main-image{% if product.category and product.category.bike_type == 'electric' %} electric-bike-photo-wrap{% endif %}" data-gallery="main">
+                        {% if product.image_src %}
+                            <img src="{{ product.image_src }}" alt="{{ product.name }}" data-gallery-main>
+                        {% else %}
+                            <span class="no-photo-label">Немає фото</span>
+                        {% endif %}
+                    </div>
+                    {% if product.image_src %}
+                        <div class="thumbs" data-gallery="thumbs" aria-label="Фото товару">
+                            <button class="thumb active" type="button" data-gallery-thumb data-src="{{ product.image_src }}" aria-label="Фото 1">
+                                <img src="{{ product.image_src }}" alt="" loading="lazy">
+                            </button>
+                        </div>
+                    {% endif %}
+                {% endif %}
+            </div>
+
+            <!-- INFO -->
+            <div class="product-detail-info">
+                <div class="pdp-meta">{% if product.brand %}{{ product.brand.name }}{% else %}VeloUkraine{% endif %}</div>
+                <h1 class="pdp-title">{{ product.name }}</h1>
+
+                <div class="pdp-block" style="margin-top:0;">
+                    <div class="pdp-block-title">Основні характеристики</div>
+                    {% with feats=product.key_feature_lines %}
+                      {% if feats %}
+                        <ul class="pdp-features">
+                          {% for f in feats %}
+                            <li>{{ f }}</li>
+                          {% endfor %}
+                        </ul>
+                      {% else %}
+                        <div style="color:var(--text3);">—</div>
+                      {% endif %}
+                    {% endwith %}
+                </div>
+
+                <div class="pdp-step">
+                    <div class="pdp-step-label">1. Колір:</div>
+                    <div class="pdp-step-value" data-color-selected>{{ product.color|default:"—" }}</div>
+                    {% if product_images|length > 1 %}
+                      <div class="thumbs" style="margin-top:10px;" data-color-thumbs aria-label="Кольори">
+                        {% for img in product_images %}
+                          <button
+                              class="thumb{% if forloop.first %} active{% endif %}"
+                              type="button"
+                              data-gallery-thumb
+                              data-src="{{ img.src }}"
+                              data-color-name="{{ img.alt|default:product.color|default:'' }}"
+                              aria-label="Колір {{ forloop.counter }}"
+                          >
+                            <img src="{{ img.src }}" alt="" loading="lazy">
+                          </button>
+                        {% endfor %}
+                      </div>
+                    {% endif %}
+                </div>
+
+                {% with sizes_source=product.available_sizes|default:product.frame_size %}
+                {% if sizes_source %}
+                  <div class="pdp-step">
+                      <div class="pdp-step-label">2. Розмір</div>
+                      <div class="pdp-step-value"><span data-size-selected>Оберіть</span></div>
+                      <div
+                          class="size-pick-grid"
+                          data-size-picker
+                          data-product-slug="{{ product.slug }}"
+                          data-size-type="{% if product.category and product.category.gear_type == 'shoes' %}shoes{% elif product.category and product.category.gear_type == 'helmet' %}helmet{% elif product.category and product.category.category_type == 'bike' %}bike{% else %}clothing{% endif %}"
+                      >
+                          {% for s in sizes_source|split_csv %}
+                              <button class="size-box" type="button" data-size="{{ s }}">{{ s }}</button>
+                          {% endfor %}
+                      </div>
+                      <a href="#" class="size-link" data-size-chart-open>Таблиця розмірів</a>
+                  </div>
+                {% endif %}
+                {% endwith %}
+
+                <div class="pdp-cta">
+                    {% if user.is_authenticated %}
+                      <button type="button" class="btn btn-primary" data-cart-buy data-product-id="{{ product.id }}">
+                        Додати в кошик — {{ product.price|floatformat:0 }} ₴
+                      </button>
+                    {% else %}
+                      <a class="btn btn-primary" href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}">Купити — {{ product.price|floatformat:0 }} ₴</a>
+                    {% endif %}
+                    {% if user.is_authenticated %}
+                      <a class="pdp-compare-link" href="#" data-compare-add
+                         data-compare-id="{{ product.id }}"
+                         data-compare-name="{{ product.name|escapejs }}"
+                         data-compare-image="{{ product.primary_image_src|default:''|escapejs }}"
+                         data-compare-url="{% url 'product_detail' product.slug %}">Порівняти товари</a>
+                    {% endif %}
+                </div>
+
+            </div>
+        </div>
+
+        <!-- DESCRIPTION -->
+        <div class="detail-desc {% if product.category and product.category.gear_type == 'bags' %}detail-desc--bags{% endif %}" id="opys">
+            <h3 class="detail-desc__title">Опис товару</h3>
+            <p class="detail-desc__subtitle">Детальна інформація про призначення, конструкцію та умови використання.</p>
+            {% if product.short_description %}
+            <p class="detail-desc__lead">{{ product.short_description }}</p>
+            {% endif %}
+
+            {% if product.category and product.category.gear_type == 'bags' %}
+            {% if product.bag_features or product.bag_volume or product.bag_weight_note or product.bag_dimensions %}
+            <div class="bag-spec-sheet" aria-label="Детальні параметри сумки">
+                {% if product.bag_feature_lines %}
+                <div class="bag-spec-row">
+                    <div class="bag-spec-k">Особливості</div>
+                    <div class="bag-spec-v">
+                        <ul>
+                            {% for line in product.bag_feature_lines %}
+                                <li>{{ line }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+                {% endif %}
+                {% if product.bag_volume %}
+                <div class="bag-spec-row">
+                    <div class="bag-spec-k">Обсяг</div>
+                    <div class="bag-spec-v">{{ product.bag_volume }}</div>
+                </div>
+                {% endif %}
+                {% if product.bag_weight_note %}
+                <div class="bag-spec-row">
+                    <div class="bag-spec-k">Вага</div>
+                    <div class="bag-spec-v">{{ product.bag_weight_note }}</div>
+                </div>
+                {% endif %}
+                {% if product.bag_dimensions %}
+                <div class="bag-spec-row">
+                    <div class="bag-spec-k">Розміри</div>
+                    <div class="bag-spec-v">
+                        {% for line in product.bag_dimension_lines %}
+                            <div>{{ line }}</div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+            {% endif %}
+
+            {% if product.description %}
+            <div class="detail-desc__body{% if product.category and product.category.gear_type == 'bags' %}{% if product.bag_features or product.bag_volume or product.bag_weight_note or product.bag_dimensions %} detail-desc__body-bags-follow{% endif %}{% endif %}">
+                {{ product.description|linebreaks }}
+            </div>
+            {% endif %}
+
+            {% if not product.description and not product.short_description %}
+                {% if product.category and product.category.gear_type == 'bags' %}
+                    {% if not product.bag_features and not product.bag_volume and not product.bag_weight_note and not product.bag_dimensions %}
+            <p class="detail-desc--empty">Розширеного опису ще не додано. Уточнення — у картці характеристик та через консультанта.</p>
+                    {% endif %}
+                {% else %}
+            <p class="detail-desc--empty">Розширеного опису ще не додано. Уточнення — у картці характеристик та через консультанта.</p>
+                {% endif %}
+            {% endif %}
+
+            <!-- TAGS -->
+            {% if product.tags.all %}
+            <div class="product-tags">
+                <div class="product-tags-title">Теги для пошуку</div>
+                <div class="tags-list">
+                    {% for tag in product.tags.all %}
+                    <a href="{% url 'catalog' %}?q={{ tag.name }}" class="tag-pill">
+                        #{{ tag.name }}
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        {% if suggested_trails and product.category and product.category.category_type == 'bike' %}
+        <div class="trail-match-section" id="pidbir-trasy">
+            <h2 class="trail-match-title">ТРАСИ, ДЕ ЦЕЙ ВЕЛО <span class="accent">ЗАЙДЕ НАЙКРАЩЕ</span></h2>
+            <p class="trail-match-lead">Маршрути підібрані за типом покриття та призначенням велосипеда (шосе, гравій, електро, дитячі тощо).</p>
+            {% if trails_filter_type %}
+                {% if user.is_authenticated %}
+                    <p class="trail-match-more"><a href="{% url 'trails' %}?type={{ trails_filter_type }}" class="trail-match-link">Усі траси такого типу →</a></p>
+                {% else %}
+                    <p class="trail-match-more"><a href="{% url 'login' %}?next={% url 'trails' %}" class="trail-match-link">Увійти, щоб відкрити всі траси</a></p>
+                {% endif %}
+            {% endif %}
+            <div class="trail-match-grid">
+                {% for trail in suggested_trails %}
+                <div class="trail-match-card">
+                    <div class="trail-match-cover" {% if trail.image_url %}style="background-image:url('{{ trail.image_url }}');"{% endif %}>
+                        <span class="trail-match-badge">{% if trail.trail_type == 'mtb' %}MTB{% elif trail.trail_type == 'road' %}Шосе{% elif trail.trail_type == 'city' %}Місто{% else %}Змішана{% endif %}</span>
+                        <span class="trail-match-city">📍 {{ trail.city }}</span>
+                    </div>
+                    <div class="trail-match-body">
+                        <h3 class="trail-match-name">{{ trail.name }}</h3>
+                        <div class="trail-match-stats">{{ trail.distance_km }} км · {{ trail.duration_hours }} год · перепад {{ trail.elevation_m }} м</div>
+                        <div class="trail-match-cta">
+                            {% if user.is_authenticated %}
+                                <a href="{% url 'trail_detail' trail.id %}" class="btn btn-primary btn-sm">Відкрити трасу</a>
+                            {% else %}
+                                <a href="{% url 'login' %}?next={% url 'trails' %}" class="btn btn-outline btn-sm">Увійти, щоб відкрити</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- REVIEWS -->
+        <div class="reviews-section" id="reviews-section">
+            <h2 class="reviews-title">ВІДГУКИ <span style="color:var(--text2)">ПОКУПЦІВ</span></h2>
+            {% if reviews %}
+                {% for r in reviews %}
+                <div class="review-card">
+                    <div class="review-header">
+                        <div>
+                            <span class="reviewer-name">{{ r.author }}</span>
+                            {% if r.is_verified %}
+                            <span style="color:#16a34a; font-size:0.75rem; margin-left:6px; font-weight:700;" title="Відгук залишено користувачем, який придбав цей товар на сайті">✓ Перевірений покупець</span>
+                            {% endif %}
+                            <div class="review-stars">{% for i in "12345" %}{% if forloop.counter <= r.rating %}★{% else %}☆{% endif %}{% endfor %}</div>
+                        </div>
+                        <span class="review-date">{{ r.created_at|date:"d.m.Y" }}</span>
+                    </div>
+                    <div class="review-text">{{ r.text }}</div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div style="color:var(--text2); text-align:center; padding:2rem;">
+                    <p>Поки немає відгуків. Будьте першим!</p>
+                    <a class="btn btn-outline btn-sm" style="margin-top:1rem;" href="{% url 'catalog' %}">
+                        Перейти в каталог
+                    </a>
+                </div>
+            {% endif %}
+
+            {% if has_reviewed %}
+                <div style="color:var(--text2); text-align:center; padding:1.5rem;">
+                    <strong>Дякуємо!</strong> Ви вже залишили відгук на цей товар.
+                </div>
+            {% else %}
+            <div class="review-form" id="review-form">
+                <h3>Залишити відгук</h3>
+                {% if user.is_authenticated %}
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="review_submit" value="1">
+                        <div class="form-row">
+                            <label for="id_author">Ім'я</label>
+                            {{ review_form.author }}
+                        </div>
+                        <div class="form-row">
+                            <label for="id_rating">Оцінка</label>
+                            {{ review_form.rating }}
+                        </div>
+                        <div class="form-row">
+                            <label for="id_text">Відгук</label>
+                            {{ review_form.text }}
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Надіслати</button>
+                        </div>
+                    </form>
+                {% else %}
+                    <a class="btn btn-primary" href="{% url 'login' %}?next={{ request.get_full_path|urlencode }}">Увійти, щоб залишити відгук</a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- RELATED -->
+        {% if related %}
+        <div class="related-section">
+            <div class="section-header">
+                <div>
+                    <h2 class="section-title">СХОЖІ ТА <span class="accent">РЕКОМЕНДОВАНІ</span></h2>
+                    <p class="section-sub" style="margin-top:0.35rem;">З тієї ж категорії та інші релевантні позиції з каталогу</p>
+                </div>
+            </div>
+            <div class="products-grid">
+                {% for p in related %}
+                <div class="product-card">
+                    <div class="product-img-wrap{% if p.category.bike_type == 'electric' %} electric-bike-photo-wrap{% endif %}">
+                        {% if p.image_src %}
+                            <img src="{{ p.image_src }}" alt="{{ p.name }}" loading="lazy">
+                        {% else %}
+                            <div class="product-img-placeholder no-photo-tiny">Немає фото</div>
+                        {% endif %}
+                    </div>
+                    <div class="product-info">
+                        {% if p.brand %}<div class="product-brand">{{ p.brand.name }}</div>{% endif %}
+                        <div class="product-name"><a href="/product/{{ p.slug }}/">{{ p.name }}</a></div>
+                        <div class="product-price">
+                            <span class="price-current">{{ p.price|floatformat:0 }} ₴</span>
+                        </div>
+                        {% if p.reviews_count %}
+                        <div class="product-rating" style="margin-top:8px;">
+                            <span class="stars">★★★★★</span>
+                            <span class="rating-count">{{ p.rating }}</span>
+                            <span class="rating-num">{{ p.reviews_count }} відг.</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    <div class="product-actions" style="flex-wrap:wrap;">
+                        <a href="/product/{{ p.slug }}/" class="btn btn-primary btn-sm" style="flex:1; min-width:100px; justify-content:center;">Деталі</a>
+                        {% if user.is_authenticated %}
+                            <button type="button" class="btn btn-outline btn-sm" data-compare-add
+                                data-compare-id="{{ p.id }}"
+                                data-compare-name="{{ p.name|escapejs }}"
+                                data-compare-image="{{ p.primary_image_src|default:''|escapejs }}"
+                                data-compare-url="{% url 'product_detail' p.slug %}"
+                                style="flex:1; min-width:100px; justify-content:center; font-size:0.7rem; padding:7px 6px; white-space:normal; line-height:1.2;">Порівняти</button>
+                        {% else %}
+                            <a href="{% url 'login' %}?next={% url 'compare' %}" class="btn btn-outline btn-sm" style="flex:1; min-width:100px; justify-content:center; font-size:0.7rem; padding:7px 6px; white-space:normal; line-height:1.2;">Порівняти</a>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script defer src="{% static 'js/product-gallery.js' %}"></script>
+<script defer src="{% static 'js/product-detail.js' %}"></script>
+{% endblock %}

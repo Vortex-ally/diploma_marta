@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block title %}Напарник · {{ post.city }} — VeloUkraine{% endblock %}
+
+{% block content %}
+<section class="container" style="padding: 2rem 2rem 5rem;">
+  <div style="max-width: 980px; margin: 0 auto;">
+    <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-end;">
+      <div>
+        <div style="color:var(--text3);font-weight:900;letter-spacing:0.10em;text-transform:uppercase;font-size:0.7rem;">📍 {{ post.city }}</div>
+        <h1 style="font-family:var(--font-head);font-weight:900;margin-top:6px;">{{ post.get_ride_type_display }} · {{ post.start_at }}</h1>
+        <div style="color:var(--text2);margin-top:6px;">Автор: <strong>{{ post.author.username }}</strong></div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <a class="btn btn-ghost" href="{% url 'rides_list' %}">Назад</a>
+        {% if is_author %}
+          <a class="btn btn-outline" href="{% url 'ride_requests' post.id %}">Заявки ({{ post.requests.count }})</a>
+        {% endif %}
+      </div>
+    </div>
+
+    <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:1rem;">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <span class="tag tag-orange">{{ post.get_level_display }}</span>
+        {% if post.distance_km %}<span class="tag tag-orange">{{ post.distance_km }} км</span>{% endif %}
+        {% if post.pace %}<span class="tag tag-orange">{{ post.pace }}</span>{% endif %}
+        {% if post.is_featured %}<span class="tag tag-blue">Premium</span>{% endif %}
+      </div>
+
+      {% if post.note %}
+        <div style="margin-top:12px;color:var(--text2);line-height:1.7;">{{ post.note }}</div>
+      {% endif %}
+
+      <div style="margin-top:14px;border-top:1px solid var(--border);padding-top:1rem;">
+        <div style="font-weight:900;letter-spacing:0.08em;text-transform:uppercase;font-size:0.8rem;margin-bottom:8px;">Контакт</div>
+        {% if can_view_contact %}
+          {% if post.contact_handle %}
+            <div style="font-weight:900;">{{ post.contact_handle }}</div>
+            <div style="color:var(--text3);margin-top:6px;">Це видно тільки автору та тим, кому прийняли заявку.</div>
+          {% else %}
+            <div style="color:var(--text2);">Контакт не вказаний.</div>
+          {% endif %}
+        {% else %}
+          <div style="color:var(--text2);">Контакт буде доступний після того, як автор прийме вашу заявку.</div>
+        {% endif %}
+      </div>
+
+      {% if not is_author %}
+        <div style="margin-top:14px;">
+          {% if my_req %}
+            <div style="color:var(--text2);font-weight:800;">Статус заявки: {{ my_req.get_status_display }}</div>
+          {% else %}
+            <form method="post" action="{% url 'ride_request' post.id %}">
+              {% csrf_token %}
+              <button class="btn btn-primary" type="submit">Хочу з тобою</button>
+            </form>
+          {% endif %}
+        </div>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}
+

@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{% block title %}Кошик — VeloUkraine{% endblock %}
+
+{% block content %}
+<section class="container" style="padding: 2rem 2rem 5rem;">
+  <div style="max-width: 980px; margin: 0 auto;">
+    <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:1.25rem;">
+      <h1 style="font-family:var(--font-head);font-weight:900;letter-spacing:0.08em;text-transform:uppercase;">Кошик</h1>
+      <a class="btn btn-ghost btn-sm" href="{% url 'catalog' %}">Продовжити покупки</a>
+    </div>
+
+    {% if not lines %}
+      <div style="padding:1.5rem;color:var(--text2);text-align:center;border-top:1px solid var(--border);">
+        Кошик порожній.
+      </div>
+    {% else %}
+      <div style="display:grid;gap:0;border-top:1px solid var(--border);">
+        {% for line in lines %}
+          <div style="padding:14px 0;display:flex;gap:12px;align-items:center;flex-wrap:wrap;border-bottom:1px solid var(--border);">
+            <div style="width:84px;height:64px;border-radius:14px;border:1px solid var(--border);background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;">
+              {% if line.product.primary_image_src %}
+                <img src="{{ line.product.primary_image_src }}" alt="{{ line.product.name }}" style="width:100%;height:100%;object-fit:contain;background:#fff;padding:6px;">
+              {% else %}
+                <span style="color:var(--text3);font-weight:800;font-size:0.75rem;">Фото</span>
+              {% endif %}
+            </div>
+            <div style="flex:1;min-width:220px;">
+              <div style="font-weight:900;letter-spacing:0.04em;">{{ line.product.name }}</div>
+              <div style="color:var(--text3);font-size:0.9rem;margin-top:4px;">{{ line.product.price|floatformat:0 }} ₴</div>
+            </div>
+
+            <form method="post" action="{% url 'cart_update' line.product.id %}" style="display:flex;gap:8px;align-items:center;">
+              {% csrf_token %}
+              <input type="number" name="qty" min="1" value="{{ line.qty }}" style="width:86px;padding:10px 12px;border:1px solid var(--border);border-radius:14px;background:#fff;">
+              <button class="btn btn-outline btn-sm" type="submit">Оновити</button>
+            </form>
+
+            <div style="min-width:140px;text-align:right;font-weight:900;">
+              {{ line.qty }} × {{ line.product.price|floatformat:0 }} ₴
+            </div>
+
+            <form method="post" action="{% url 'cart_remove' line.product.id %}">
+              {% csrf_token %}
+              <button class="btn btn-ghost btn-sm" type="submit">Прибрати</button>
+            </form>
+          </div>
+        {% endfor %}
+      </div>
+
+      <div style="margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+        <div style="color:var(--text3);font-weight:800;letter-spacing:0.12em;text-transform:uppercase;font-size:0.75rem;">Разом</div>
+        <div style="font-family:var(--font-head);font-weight:900;font-size:1.5rem;">{{ total|floatformat:0 }} ₴</div>
+        <button class="btn btn-primary" type="button" disabled title="Checkout додамо наступним кроком">Оформити</button>
+      </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}
+

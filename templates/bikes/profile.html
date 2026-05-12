@@ -1,0 +1,547 @@
+{% extends 'base.html' %}
+
+{% block title %}Профіль — VeloUkraine{% endblock %}
+
+{% block extra_css %}
+<style>
+  .profile-wrap { min-height: calc(100vh - 70px); padding: 0; background: var(--bg); }
+  .profile-card {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0;
+  }
+  @media (max-width: 768px) { .profile-card { padding: 16px; } }
+
+  .profile-head {
+    padding: 18px 24px 16px;
+    border-bottom: 1px solid rgba(0,0,0,0.10);
+    background: #fff;
+  }
+  @media (max-width: 480px) {
+    .profile-head { padding: 16px 14px 14px; }
+    .p-form { padding: 16px 14px 22px; }
+    .p-history { padding: 0 14px 22px; }
+  }
+  .profile-title { font-family: var(--font-head); font-weight: 900; letter-spacing: 0.02em; font-size: 1.35rem; }
+  .profile-sub { color: var(--text3); font-size: 0.92rem; margin-top: 0.25rem; }
+
+  .p-form { display:grid; gap: 16px; padding: 18px 24px 28px; max-width: 1200px; margin: 0 auto; }
+
+  .p-top {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    gap: 16px;
+    align-items: center;
+  }
+  @media (max-width: 720px) { .p-top { grid-template-columns: 1fr; } }
+
+  .p-avatar {
+    width: 220px;
+    height: 220px;
+    border-radius: 999px;
+    border: 1px solid rgba(0,0,0,0.14);
+    background: #0a0a0a;
+    overflow: hidden;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color: #fff;
+    font-family: var(--font-head);
+    font-weight: 900;
+    letter-spacing: 0.06em;
+  }
+  .p-avatar img { width: 100%; height: 100%; object-fit: cover; display:block; }
+
+  .p-uploader {
+    display: grid;
+    gap: 12px;
+    padding: 16px;
+    border: 1px solid rgba(0,0,0,0.10);
+    background: #fff;
+    box-shadow: 0 10px 30px rgba(15,23,42,0.06);
+  }
+  .p-uploader-head{
+    display:flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .p-uploader-title{
+    font-family: var(--font-head);
+    font-weight: 900;
+    font-size: 0.92rem;
+    letter-spacing: 0.10em;
+    text-transform: uppercase;
+    color: var(--text);
+    margin: 0;
+  }
+  .p-uploader-sub{
+    color: var(--text3);
+    font-weight: 700;
+    font-size: 0.9rem;
+    margin: 0;
+  }
+  .p-uploader-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 10px;
+    align-items: center;
+  }
+  @media (max-width: 720px) {
+    .p-uploader-row { grid-template-columns: 1fr; }
+  }
+  .p-file-btn {
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    padding: 12px 20px;
+    border-radius: 0;
+    border: 1px solid rgba(0,0,0,0.14);
+    background: #fff;
+    color: #0a0a0a;
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    font-size: 0.72rem;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+  }
+  .p-file-btn:hover { background: rgba(0,0,0,0.02); border-color: rgba(0,0,0,0.28); }
+  .p-file-btn--primary{
+    background: #0a0a0a;
+    color: #fff;
+    border-color: #0a0a0a;
+  }
+  .p-file-btn--primary:hover{ background:#111; border-color:#111; }
+  .p-drop {
+    border: 1px dashed rgba(0,0,0,0.22);
+    background: rgba(0,0,0,0.02);
+    padding: 24px 16px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 120px;
+    transition: all 0.2s ease;
+  }
+  .p-drop:hover {
+    background: rgba(0,0,0,0.04);
+    border-color: rgba(0,0,0,0.4);
+  }
+  .p-drop.is-dragover{
+    border-color: var(--accent2);
+    box-shadow: 0 0 0 3px rgba(20,184,166,0.15);
+    background: rgba(20,184,166,0.06);
+  }
+  .p-drop-icon {
+    width: 28px;
+    height: 28px;
+    color: rgba(10,10,10,0.4);
+    margin-bottom: 4px;
+  }
+  .p-drop-text {
+    font-size: 0.85rem;
+    color: var(--text3);
+    text-align: center;
+    font-weight: 600;
+  }
+  .p-file-name {
+    font-size: 0.75rem;
+    padding: 6px 10px;
+    background: rgba(0,0,0,0.04);
+    color: rgba(10,10,10,0.68);
+    font-weight: 700;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: none;
+    border: 1px solid rgba(0,0,0,0.06);
+  }
+  .p-file-name.has-file {
+    display: block;
+    margin-top: 4px;
+  }
+  .p-uploader small { color: var(--text3); font-weight: 600; }
+  .p-uploader-note{
+    display:flex;
+    align-items:center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .p-uploader-note small{ margin: 0; }
+
+  .p-grid { display:grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 10px; }
+  @media (max-width: 900px) { .p-grid { grid-template-columns: 1fr; } }
+
+  .p-field { display:grid; gap: 0.35rem; }
+  .p-field .lbl { font-size: 0.72rem; letter-spacing: 0.10em; text-transform: uppercase; font-weight: 900; color: var(--text3); }
+
+  .p-field input,
+  .p-field textarea,
+  .p-field select {
+    width: 100%;
+    max-width: 100%;
+    padding: 12px 14px !important;
+    border-radius: 0 !important;
+    border: 1px solid rgba(0,0,0,0.14) !important;
+    background: #fff !important;
+    color: #0a0a0a !important;
+    outline: none !important;
+  }
+
+  .profile-card .btn { border-radius: 0 !important; }
+
+  .p-history {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 24px 28px;
+  }
+  .p-history-grid{
+    margin-top: 10px;
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    align-items: start;
+  }
+  @media (max-width: 980px) {
+    .p-history-grid{ grid-template-columns: 1fr; }
+  }
+
+  .p-panel{
+    background: #fff;
+    border: 1px solid rgba(0,0,0,0.10);
+  }
+  .p-panel-head{
+    padding: 14px 16px 12px;
+    border-bottom: 1px solid rgba(0,0,0,0.08);
+    display:flex;
+    justify-content: space-between;
+    gap: 10px;
+    align-items: baseline;
+  }
+  .p-panel h3{
+    margin: 0;
+    font-size: 14px;
+    letter-spacing: .10em;
+    text-transform: uppercase;
+    font-weight: 900;
+  }
+  .p-count{
+    font-size: 12px;
+    color: rgba(10,10,10,0.55);
+    font-weight: 700;
+  }
+
+  .p-list{
+    display:grid;
+    gap: 10px;
+    padding: 14px 16px 16px;
+  }
+  .p-item{
+    border: 1px solid rgba(0,0,0,0.10);
+    padding: 12px 12px;
+    background: #fff;
+  }
+  .p-item .meta{
+    font-size: 12px;
+    color: rgba(10,10,10,0.60);
+    margin-bottom: 8px;
+    display:flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .badge{
+    display:inline-flex;
+    align-items:center;
+    gap: 6px;
+    padding: 3px 8px;
+    border: 1px solid rgba(0,0,0,0.12);
+    background: rgba(20,184,166,0.08);
+    font-weight: 900;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    font-size: 11px;
+  }
+  .badge--muted{
+    background: rgba(0,0,0,0.04);
+    letter-spacing: .04em;
+  }
+  .p-item .msg{
+    font-size: 14px;
+    line-height: 1.45;
+    white-space: pre-wrap;
+  }
+  .p-empty{
+    padding: 16px;
+    border: 1px dashed rgba(0,0,0,0.18);
+    background: rgba(0,0,0,0.02);
+    color: rgba(10,10,10,0.65);
+    font-weight: 700;
+  }
+  .order-head{
+    display:flex;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+    align-items: baseline;
+  }
+  .order-total{ font-weight: 900; }
+  .order-items{
+    margin-top: 10px;
+    display: grid;
+    gap: 6px;
+    font-size: 14px;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="profile-wrap">
+  <div class="profile-card">
+    <div class="profile-head">
+      <div>
+        <div class="profile-title">Профіль</div>
+        <div class="profile-sub">Ви увійшли як <strong>{{ request.user.username }}</strong></div>
+      </div>
+    </div>
+
+    <form method="post" enctype="multipart/form-data" class="p-form">
+      {% csrf_token %}
+
+      <div class="p-top">
+        <div class="p-avatar" aria-label="Фото профілю">
+          {% if profile.photo %}
+            <img id="profilePhotoPreview" src="{{ profile.photo.url }}" alt="Фото профілю">
+          {% else %}
+            <span id="profilePhotoInitials">{{ request.user.username|slice:":2"|upper }}</span>
+          {% endif %}
+        </div>
+
+        <div class="p-uploader">
+          <div class="p-uploader-head">
+            <div>
+              <h3 class="p-uploader-title">Фото профілю</h3>
+            </div>
+          </div>
+
+          <div class="p-drop" data-photo-drop>
+            <svg class="p-drop-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="square" stroke-linejoin="miter" stroke-width="1.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+            <button class="p-file-btn p-file-btn--primary" type="button" data-photo-pick>
+              {% if profile.photo %}Замінити фото{% else %}Завантажити фото{% endif %}
+            </button>
+            <div class="p-drop-text">або перетягніть файл сюди</div>
+            <div class="p-file-name" data-photo-filename></div>
+            <input
+              type="file"
+              name="photo"
+              id="id_photo"
+              accept="image/png,image/jpeg,image/webp"
+              style="display:none"
+            >
+          </div>
+
+          <div class="p-uploader-note">
+            {% if profile_form.photo.errors %}
+              <small style="color: var(--red); font-weight:600;">{{ profile_form.photo.errors|join:', ' }}</small>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+
+        <div class="p-grid">
+          {% for field in user_form %}
+            <div class="p-field">
+              <div class="lbl">{{ field.label }}{% if field.field.required %} <span style="color: var(--red);">*</span>{% endif %}</div>
+              {{ field }}
+              {% if field.errors %}
+                <small style="color: var(--red); font-weight:600;">{{ field.errors|join:', ' }}</small>
+              {% endif %}
+            </div>
+          {% endfor %}
+
+          {% for field in profile_form %}
+            {% if field.name != 'photo' %}
+              <div class="p-field">
+                <div class="lbl">{{ field.label }}{% if field.field.required %} <span style="color: var(--red);">*</span>{% endif %}</div>
+                {{ field }}
+                {% if field.errors %}
+                  <small style="color: var(--red); font-weight:600;">{{ field.errors|join:', ' }}</small>
+                {% endif %}
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn btn-primary" type="submit">Зберегти дані</button>
+        <a class="btn btn-ghost" href="{% url 'home' %}">На головну</a>
+      </div>
+    </form>
+
+    <div class="p-history">
+      <div class="p-history-grid">
+        <div class="p-panel">
+          <div class="p-panel-head">
+            <h3>Мої AI-запити</h3>
+            <div class="p-count">{% if ai_records %}{{ ai_records|length }}{% else %}0{% endif %}</div>
+          </div>
+          {% if ai_records %}
+            <div class="p-list">
+              {% for r in ai_records %}
+                <div class="p-item">
+                  <div class="meta">
+                    <span>{{ r.created_at|date:"d.m.Y H:i" }}</span>
+                    {% if r.is_wizard %}<span class="badge">підбір</span>{% endif %}
+                    {% if r.model %}<span class="badge badge--muted">{{ r.model }}</span>{% endif %}
+                  </div>
+                  <div class="msg"><strong>Ви:</strong> {{ r.user_message }}</div>
+                  {% if r.assistant_message %}
+                    <div class="msg" style="margin-top:8px;"><strong>AI:</strong> {{ r.assistant_message }}</div>
+                  {% endif %}
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="p-list">
+              <div class="p-empty">Поки що немає збережених запитів.</div>
+            </div>
+          {% endif %}
+        </div>
+
+        <div class="p-panel">
+          <div class="p-panel-head">
+            <h3>Мої покупки</h3>
+            <div class="p-count">{% if orders %}{{ orders|length }}{% else %}0{% endif %}</div>
+          </div>
+          {% if orders %}
+            <div class="p-list">
+              {% for o in orders %}
+                <div class="p-item">
+                  <div class="order-head">
+                    <div class="meta"><span class="badge badge--muted">замовлення #{{ o.id }}</span> <span>{{ o.created_at|date:"d.m.Y H:i" }}</span></div>
+                    <div class="order-total">{{ o.amount_uah }} грн</div>
+                  </div>
+                  <div class="order-items">
+                    {% for it in o.items.all %}
+                      <div>×{{ it.quantity }} — {{ it.product_name }} <span style="color: rgba(10,10,10,0.55);">({{ it.price_uah }} грн)</span></div>
+                    {% endfor %}
+                  </div>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="p-list">
+              <div class="p-empty">У вас ще немає оплачених замовлень.</div>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(() => {
+  const input = document.querySelector('input[type="file"][name="photo"]');
+  if (!input) return;
+
+  const box = document.querySelector('.p-avatar');
+  if (!box) return;
+
+  const pick = document.querySelector('[data-photo-pick]');
+  const fileName = document.querySelector('[data-photo-filename]');
+  const drop = document.querySelector('[data-photo-drop]');
+  if (pick) pick.addEventListener('click', () => input.click());
+
+  const setFileName = () => {
+    if (!fileName) return;
+    const f = input.files && input.files[0];
+    if (f) {
+      fileName.textContent = f.name;
+      fileName.classList.add('has-file');
+    } else {
+      fileName.textContent = '';
+      fileName.classList.remove('has-file');
+    }
+  };
+
+  const ensureImg = () => {
+    let img = document.getElementById('profilePhotoPreview');
+    if (img) return img;
+    img = document.createElement('img');
+    img.id = 'profilePhotoPreview';
+    img.alt = 'Фото профілю';
+    img.style.width = '100%';
+    img.style.height = '100%';
+    img.style.objectFit = 'cover';
+    box.innerHTML = '';
+    box.appendChild(img);
+    return img;
+  };
+
+  input.addEventListener('change', () => {
+    const file = input.files && input.files[0];
+    if (!file) return;
+    const img = ensureImg();
+    img.src = URL.createObjectURL(file);
+    setFileName();
+  });
+
+  const hasFiles = (dt) => {
+    try {
+      return dt && dt.files && dt.files.length;
+    } catch (e) {
+      return false;
+    }
+  };
+
+  if (drop) {
+    const on = (ev, fn) => drop.addEventListener(ev, fn, { passive: false });
+    on('dragenter', (e) => { e.preventDefault(); drop.classList.add('is-dragover'); });
+    on('dragover', (e) => { e.preventDefault(); drop.classList.add('is-dragover'); });
+    on('dragleave', (e) => { e.preventDefault(); drop.classList.remove('is-dragover'); });
+    on('drop', (e) => {
+      e.preventDefault();
+      drop.classList.remove('is-dragover');
+      const dt = e.dataTransfer;
+      if (!hasFiles(dt)) return;
+      input.files = dt.files;
+      const file = input.files && input.files[0];
+      if (!file) return;
+      const img = ensureImg();
+      img.src = URL.createObjectURL(file);
+      setFileName();
+    });
+  }
+
+  // initial label (if browser keeps previous file selection)
+  setFileName();
+})();
+
+</script>
+<script src="https://unpkg.com/imask"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const phoneInput = document.querySelector('input[name="phone"]');
+    if (phoneInput) {
+      IMask(phoneInput, {
+        mask: '+{38} (000) 000-00-00',
+        lazy: true
+      });
+    }
+  });
+</script>
+{% endblock %}

@@ -1,0 +1,322 @@
+{% extends 'base.html' %}
+{% block title %}Велотраси України — VeloUkraine{% endblock %}
+
+{% block extra_css %}
+<style>
+.trails-hero {
+    background: rgba(255,255,255,0.72);
+    border-bottom: 1px solid var(--border);
+    padding: 4rem 0;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+.trails-hero::before {
+    content: '🗺️';
+    position: absolute;
+    font-size: 20rem;
+    opacity: 0.03;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+}
+.trails-hero h1 { font-family: var(--font-display); font-size: 4rem; letter-spacing: 3px; }
+.trails-hero p { color: var(--text2); margin-top: 0.5rem; font-size: 1.1rem; }
+
+.trails-wrap { padding: 3rem 0 6rem; }
+
+.trails-filters {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 2rem;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.25rem;
+}
+
+.filter-group { display: flex; flex-direction: column; gap: 6px; }
+.filter-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text3); font-weight: 600; }
+
+.filter-select {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 50px;
+    padding: 8px 16px;
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 0.875rem;
+    outline: none;
+    cursor: pointer;
+}
+.filter-select:focus { border-color: #a1a1aa; }
+
+.trails-grid-big {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+}
+
+.trail-card-big {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    overflow: hidden;
+    transition: all 0.3s;
+}
+.trail-card-big:hover { transform: translateY(-2px); box-shadow: var(--shadow); border-color: #d4d4d8; }
+
+.trail-header {
+    height: 200px;
+    background: var(--bg3);
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 6rem;
+    position: relative;
+}
+
+.trail-header .type-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(255,255,255,0.88);
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border);
+    border-radius: 50px;
+    padding: 4px 12px;
+    font-size: 0.75rem;
+    color: var(--text2);
+}
+
+.trail-body { padding: 1.5rem; }
+.trail-city { color: var(--text2); font-size: 0.8rem; font-weight: 600; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 6px; }
+.trail-name-big { font-family: var(--font-head); font-weight: 700; font-size: 1.2rem; margin-bottom: 1rem; }
+
+.trail-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    background: var(--bg3);
+    border-radius: var(--radius-sm);
+    padding: 0.75rem;
+}
+.trail-stat { text-align: center; }
+.trail-stat-val { font-family: var(--font-head); font-weight: 700; font-size: 1.1rem; color: var(--text); }
+.trail-stat-key { color: var(--text3); font-size: 0.7rem; margin-top: 2px; }
+
+.trail-desc { color: var(--text2); font-size: 0.875rem; line-height: 1.6; margin-bottom: 1.25rem; }
+
+.trail-footer { display: flex; justify-content: space-between; align-items: center; }
+
+.trails-map-mock {
+    max-width: 1400px;
+    margin: 0 auto 2rem;
+    padding: 0 2rem;
+}
+.trails-map-inner {
+    border-radius: 20px;
+    border: 1px dashed var(--border);
+    background:
+        linear-gradient(135deg, rgba(15,118,110,0.06), rgba(37,99,235,0.05)),
+        repeating-linear-gradient(90deg, transparent, transparent 40px, rgba(15,118,110,0.04) 40px, rgba(15,118,110,0.04) 41px);
+    min-height: 140px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 1.25rem 1.5rem;
+    color: var(--text3);
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.no-trails { text-align: center; padding: 6rem; color: var(--text2); }
+.no-trails .emoji { font-size: 5rem; margin-bottom: 1rem; }
+
+@media (max-width: 1024px) { .trails-grid-big { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 768px) { .trails-grid-big { grid-template-columns: 1fr; } }
+
+.trail-suggest-bikes { margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed var(--border); }
+.trail-suggest-label {
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 0.65rem;
+}
+.trail-suggest-bikes-row {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+    -webkit-overflow-scrolling: touch;
+}
+.trail-suggest-bikes-row::-webkit-scrollbar { height: 4px; }
+.trail-suggest-bikes-row::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+.trail-suggest-bike {
+    flex: 0 0 auto;
+    width: 112px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+.trail-suggest-bike:hover { border-color: var(--accent2); box-shadow: var(--shadow); }
+.trail-suggest-bike-img {
+    height: 64px;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+.trail-suggest-bike-img img { width: 100%; height: 100%; object-fit: contain; background:#fff; padding: 6px; }
+.trail-suggest-bike-img span { font-size: 0.65rem; color: var(--text3); padding: 4px; text-align: center; line-height: 1.2; }
+.trail-suggest-bike-name {
+    display: block;
+    font-size: 0.65rem;
+    font-weight: 700;
+    line-height: 1.25;
+    padding: 6px 6px 2px;
+    max-height: 2.5em;
+    overflow: hidden;
+}
+.trail-suggest-bike-meta {
+    display: block;
+    font-size: 0.72rem;
+    font-weight: 800;
+    padding: 0 6px 8px;
+    color: var(--text);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="trails-hero">
+    <div class="container">
+        <h1>ВЕЛОТРАСИ <span style="color:var(--text2)">УКРАЇНИ</span></h1>
+        <p>Знаходьте найкращі маршрути для катання у своєму місті</p>
+    </div>
+</div>
+
+<div class="trails-wrap">
+    <div class="container">
+        <form method="get" class="trails-filters">
+            <div class="filter-group">
+                <div class="filter-label">Місто</div>
+                <select name="city" class="filter-select">
+                    <option value="">Всі міста</option>
+                    {% for city in cities %}
+                    <option value="{{ city }}" {% if selected_city == city %}selected{% endif %}>{{ city }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="filter-group">
+                <div class="filter-label">Складність</div>
+                <select name="difficulty" class="filter-select">
+                    <option value="">Будь-яка</option>
+                    <option value="easy" {% if difficulty == 'easy' %}selected{% endif %}>Легка</option>
+                    <option value="medium" {% if difficulty == 'medium' %}selected{% endif %}>Середня</option>
+                    <option value="hard" {% if difficulty == 'hard' %}selected{% endif %}>Важка</option>
+                    <option value="extreme" {% if difficulty == 'extreme' %}selected{% endif %}>Екстремальна</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <div class="filter-label">Тип</div>
+                <select name="type" class="filter-select">
+                    <option value="">Всі типи</option>
+                    <option value="road" {% if trail_type == 'road' %}selected{% endif %}>Шосе</option>
+                    <option value="mtb" {% if trail_type == 'mtb' %}selected{% endif %}>Гірська</option>
+                    <option value="city" {% if trail_type == 'city' %}selected{% endif %}>Міська</option>
+                    <option value="mixed" {% if trail_type == 'mixed' %}selected{% endif %}>Змішана</option>
+                </select>
+            </div>
+            <div class="filter-group" style="justify-content:flex-end; margin-left:auto;">
+                <div class="filter-label">&nbsp;</div>
+                <div style="display:flex;gap:8px;">
+                    <button type="submit" class="btn btn-primary btn-sm">Знайти</button>
+                    <a href="/trails/" class="btn btn-ghost btn-sm">Скинути</a>
+                </div>
+            </div>
+        </form>
+
+        {% if trail_cards %}
+        <div class="trails-grid-big">
+            {% for row in trail_cards %}
+            {% with trail=row.trail %}
+            <div class="trail-card-big">
+                <div class="trail-header" {% if trail.image_url %}style="background-image: url('{{ trail.image_url }}');"{% endif %}>
+                    {% if not trail.image_url %}
+                        {% if trail.trail_type == 'mtb' %}🏔️{% elif trail.trail_type == 'road' %}🛣️{% elif trail.trail_type == 'city' %}🏙️{% else %}🌲{% endif %}
+                    {% endif %}
+                    <span class="type-badge">
+                        {% if trail.trail_type == 'mtb' %}MTB{% elif trail.trail_type == 'road' %}Шосе{% elif trail.trail_type == 'city' %}Місто{% else %}Змішана{% endif %}
+                    </span>
+                </div>
+                <div class="trail-body">
+                    <div class="trail-city">📍 {{ trail.city }}</div>
+                    <div class="trail-name-big">{{ trail.name }}</div>
+                    <div class="trail-stats">
+                        <div class="trail-stat">
+                            <div class="trail-stat-val">{{ trail.distance_km }} км</div>
+                            <div class="trail-stat-key">Дистанція</div>
+                        </div>
+                        <div class="trail-stat">
+                            <div class="trail-stat-val">{{ trail.duration_hours }} год</div>
+                            <div class="trail-stat-key">Час</div>
+                        </div>
+                        <div class="trail-stat">
+                            <div class="trail-stat-val">{{ trail.elevation_m }}м</div>
+                            <div class="trail-stat-key">Перепад</div>
+                        </div>
+                    </div>
+                    {% if trail.description %}
+                    <div class="trail-desc">{{ trail.description|truncatewords:25 }}</div>
+                    {% endif %}
+                    <div class="trail-footer">
+                        <span class="difficulty-badge diff-{{ trail.difficulty }}">
+                            {% if trail.difficulty == 'easy' %}🟢 Легка{% elif trail.difficulty == 'medium' %}🟡 Середня{% elif trail.difficulty == 'hard' %}🔴 Важка{% else %}⚫ Екстремальна{% endif %}
+                        </span>
+                        {% if trail.rating > 0 %}
+                        <span style="color:var(--text2); font-weight:600;">⭐ {{ trail.rating }}/5</span>
+                        {% endif %}
+                    </div>
+                    {% if trail.map_url %}
+                    <a href="{{ trail.map_url }}" target="_blank" class="btn btn-outline btn-sm" style="width:100%; justify-content:center; margin-top:1rem;">
+                        🗺️ Відкрити на карті
+                    </a>
+                    {% else %}
+                    <a href="{% url 'trail_detail' trail.id %}" class="btn btn-primary btn-sm" style="width:100%; justify-content:center; margin-top:1rem;">
+                        Переглянути трасу
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endwith %}
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="no-trails">
+            <div class="emoji">🗺️</div>
+            <h3 style="font-family:var(--font-head);font-size:1.5rem;margin-bottom:0.5rem;color:var(--text);">Траси не знайдено</h3>
+            <p>Спробуйте змінити фільтри або запитайте AI про маршрути</p>
+            <button class="btn btn-primary" style="margin-top:1.5rem;" onclick="sendQuick('Порадь велотраси в Україні')">
+                🤖 Запитати VeloBot про траси
+            </button>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}{% endblock %}

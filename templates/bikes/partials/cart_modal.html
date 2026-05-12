@@ -1,0 +1,55 @@
+<div class="cart-modal__inner">
+  <div class="cart-modal__head">
+    <div class="cart-modal__title">Мій кошик</div>
+    <button type="button" class="cart-modal__close" data-cart-close aria-label="Закрити">×</button>
+  </div>
+
+  <div class="cart-modal__body">
+    {% if not lines %}
+      <div class="cart-modal__empty">Кошик порожній.</div>
+    {% else %}
+      <div class="cart-modal__list">
+        {% for line in lines %}
+          <div class="cart-modal__row" data-cart-row>
+            <div class="cart-modal__img">
+              {% if line.product.primary_image_src %}
+                <img src="{{ line.product.primary_image_src }}" alt="{{ line.product.name }}">
+              {% else %}
+                <span>Фото</span>
+              {% endif %}
+            </div>
+
+            <div class="cart-modal__info">
+              <div class="cart-modal__name">{{ line.product.name }}</div>
+              <div class="cart-modal__price">{{ line.product.price|floatformat:0 }} ₴</div>
+            </div>
+
+            <div class="cart-modal__qty" aria-label="Кількість">
+              <button type="button" class="cart-modal__qtybtn" data-cart-dec data-product-id="{{ line.product.id }}">−</button>
+              <div class="cart-modal__qtynum" data-cart-qty>{{ line.qty }}</div>
+              <button type="button" class="cart-modal__qtybtn" data-cart-inc data-product-id="{{ line.product.id }}">+</button>
+            </div>
+
+            <div class="cart-modal__sum" aria-label="Вартість">
+              {{ line.qty|add:0 }} × {{ line.product.price|floatformat:0 }} ₴
+            </div>
+
+            <button type="button" class="cart-modal__trash" data-cart-remove data-product-id="{{ line.product.id }}" aria-label="Прибрати">🗑️</button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  </div>
+
+  <div class="cart-modal__foot">
+    <div class="cart-modal__total">
+      <span>Всього</span>
+      <strong>{{ total|floatformat:0 }} ₴</strong>
+    </div>
+    <div class="cart-modal__actions">
+      <a class="btn btn-ghost btn-sm" href="{% url 'catalog' %}">Повернутись до покупок</a>
+      <a class="btn btn-primary" href="{% url 'checkout' %}">Оформити замовлення</a>
+    </div>
+  </div>
+</div>
+

@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+
+{% block title %}Знайти напарника — VeloUkraine{% endblock %}
+
+{% block extra_css %}
+<style>
+  .rides-wrap { padding: 2rem 0 5rem; }
+  .rides-head { display:flex; align-items:flex-end; justify-content:space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 1rem; }
+  .rides-title { font-family: var(--font-head); font-weight: 900; letter-spacing: 0.06em; text-transform: uppercase; }
+  .rides-sub { color: var(--text3); margin-top: 6px; }
+  .rides-filters { display:flex; gap: 10px; flex-wrap: wrap; border-top: 1px solid var(--border); padding-top: 1rem; margin-bottom: 1.25rem; }
+  .rf { display:grid; gap: 6px; }
+  .rf label { font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 900; color: var(--text3); }
+  .rf input, .rf select {
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    background: #fff;
+    border-radius: 0;
+    min-width: 220px;
+  }
+  .rides-grid { display:grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  @media (max-width: 1024px) { .rides-grid { grid-template-columns: 1fr 1fr; } }
+  @media (max-width: 720px) { .rides-grid { grid-template-columns: 1fr; } .rf input, .rf select { min-width: 100%; width: 100%; } }
+  .ride-card { border: 1px solid var(--border); background: var(--surface); box-shadow: var(--shadow); padding: 14px; text-decoration:none; color: inherit; display:grid; gap: 10px; }
+  .ride-card__top { display:flex; justify-content:space-between; gap: 10px; align-items:flex-start; }
+  .ride-card__city { color: var(--text3); font-weight: 900; letter-spacing: 0.10em; text-transform: uppercase; font-size: 0.7rem; }
+  .ride-card__title { font-weight: 900; font-size: 1.05rem; }
+  .ride-badges { display:flex; gap: 8px; flex-wrap: wrap; }
+  .rb { border: 1px solid var(--border); background: var(--bg2); padding: 3px 10px; font-size: 0.75rem; font-weight: 800; }
+  .ride-meta { color: var(--text2); }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="rides-wrap">
+  <div class="container">
+    <div class="rides-head">
+      <div>
+        <div class="rides-title">Знайти напарника</div>
+        <div class="rides-sub">Обери місто/тип — і знайди з ким кататись.</div>
+      </div>
+      <a class="btn btn-primary btn-sm" href="{% url 'ride_new' %}">Створити пост</a>
+    </div>
+
+    <form class="rides-filters" method="get">
+      <div class="rf">
+        <label>Місто</label>
+        <input name="city" value="{{ city }}" placeholder="Напр. Київ">
+      </div>
+      <div class="rf">
+        <label>Тип</label>
+        <select name="ride_type">
+          <option value="">Будь-який</option>
+          {% for v, lbl in ride_type_choices %}
+            <option value="{{ v }}" {% if ride_type == v %}selected{% endif %}>{{ lbl }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="rf">
+        <label>Рівень</label>
+        <select name="level">
+          <option value="">Будь-який</option>
+          {% for v, lbl in level_choices %}
+            <option value="{{ v }}" {% if level == v %}selected{% endif %}>{{ lbl }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="rf" style="align-self:end;">
+        <label>&nbsp;</label>
+        <div style="display:flex; gap: 8px; flex-wrap: wrap;">
+          <button class="btn btn-primary btn-sm" type="submit">Знайти</button>
+          <a class="btn btn-ghost btn-sm" href="{% url 'rides_list' %}">Скинути</a>
+        </div>
+      </div>
+    </form>
+
+    {% if posts %}
+      <div class="rides-grid">
+        {% for p in posts %}
+          <a class="ride-card" href="{% url 'ride_detail' p.id %}">
+            <div class="ride-card__top">
+              <div>
+                <div class="ride-card__city">📍 {{ p.city }}</div>
+                <div class="ride-card__title">{{ p.get_ride_type_display }} · {{ p.start_at }}</div>
+              </div>
+              {% if p.is_featured %}
+                <span class="rb">Premium</span>
+              {% endif %}
+            </div>
+            <div class="ride-badges">
+              <span class="rb">{{ p.get_level_display }}</span>
+              {% if p.distance_km %}<span class="rb">{{ p.distance_km }} км</span>{% endif %}
+              {% if p.pace %}<span class="rb">{{ p.pace }}</span>{% endif %}
+            </div>
+            {% if p.note %}
+              <div class="ride-meta">{{ p.note|truncatewords:18 }}</div>
+            {% endif %}
+            <div class="ride-meta">Автор: <strong>{{ p.author.username }}</strong></div>
+          </a>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div style="color: var(--text2); border-top: 1px solid var(--border); padding-top: 1rem;">
+        Поки немає постів під ваші фільтри.
+      </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}
+

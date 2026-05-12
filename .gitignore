@@ -1,0 +1,34 @@
+# Secrets & local env
+.env
+.env.local
+*.pem
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# Django
+staticfiles/
+media/
+
+# Local databases
+db.sqlite3
+*.sqlite3
+
+# macOS
+.DS_Store
+
+# IDE
+.idea/
+.vscode/
+
+__pycache__/
+*.pyc
+db.sqlite3
+.env
+venv/
+media/
+staticfiles/

@@ -1,0 +1,2007 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}VeloUkraine — Велосипеди та Екіпірування{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            /* Мінімалізм: чорний акцент (без кольорового брендингу) */
+            --bg: #fafafa;
+            --bg2: #f4f4f5;
+            --bg3: #e4e4e7;
+            --surface: #ffffff;
+            --surface2: #fafafa;
+            --border: #e4e4e7;
+            --accent: #0a0a0a;
+            --accent2: #171717;
+            --accent2-deep: #0a0a0a;
+            --accent-glow: rgba(0, 0, 0, 0.14);
+            --brand: #14b8a6; /* teal accent for logo text */
+            /* Кнопки/CTA — чорні */
+            --btn-green: #171717;
+            --btn-green-hover: #27272a;
+            --btn-green-deep: #0a0a0a;
+            --btn-green-glow: rgba(0, 0, 0, 0.22);
+            --green: #2ecc71;
+            --red: #e74c3c;
+            --blue: #171717;
+            --text: #0a0a0a;
+            --text2: #3f3f46;
+            --text3: #71717a;
+            --radius: 12px;
+            --radius-sm: 8px;
+            --shadow: 0 8px 30px rgba(0,0,0,0.06);
+            --font-display: 'Bebas Neue', sans-serif;
+            --font-head: 'Montserrat', sans-serif;
+            --font-body: 'Inter', sans-serif;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: var(--font-body);
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* ─── NAVBAR ─── */
+        .navbar {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: rgba(255,255,255,0.97);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border);
+            padding: 0 2rem;
+        }
+
+        .nav-inner {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            height: 70px;
+            gap: 2rem;
+        }
+
+        .logo {
+            font-family: var(--font-display);
+            font-size: 2rem;
+            color: var(--brand);
+            text-decoration: none;
+            letter-spacing: 2px;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-shrink: 0;
+        }
+
+        .logo span { color: var(--text2); }
+
+        .nav-mega {
+            display: flex;
+            gap: 0;
+            flex: 1;
+        }
+
+        .nav-burger {
+            display: none;
+            width: 42px;
+            height: 42px;
+            border-radius: 999px;
+            background: #fff;
+            border: 1px solid rgba(0,0,0,0.14);
+            color: var(--text);
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .nav-burger:active { transform: scale(0.98); }
+        .nav-burger svg { width: 20px; height: 20px; }
+
+        .mnav { position: fixed; inset: 0; z-index: 2050; display: none; }
+        .mnav.open { display: block; }
+        .mnav__backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.28); backdrop-filter: blur(10px); }
+        .mnav__panel {
+            position: absolute;
+            top: 0;
+            right: 0;
+            height: 100%;
+            width: min(92vw, 360px);
+            background: #fff;
+            border-left: 1px solid rgba(0,0,0,0.10);
+            display: flex;
+            flex-direction: column;
+            transform: translateX(12px);
+            opacity: 0;
+            transition: transform 0.18s ease, opacity 0.18s ease;
+        }
+        .mnav.open .mnav__panel { transform: translateX(0); opacity: 1; }
+        .mnav__head {
+            padding: 16px 16px 12px;
+            border-bottom: 1px solid rgba(0,0,0,0.08);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+        .mnav__brand { font-family: var(--font-display); letter-spacing: 2px; font-size: 1.6rem; text-decoration: none; color: var(--brand); }
+        .mnav__brand span { color: rgba(10,10,10,0.55); }
+        .mnav__close {
+            width: 40px; height: 40px; border-radius: 999px;
+            border: 1px solid rgba(0,0,0,0.14);
+            background: #fff;
+            cursor: pointer;
+            font-size: 22px;
+            line-height: 1;
+        }
+        .mnav__body { padding: 12px 10px 16px; overflow: auto; -webkit-overflow-scrolling: touch; }
+        .mnav__group { margin-bottom: 12px; }
+        .mnav__title {
+            padding: 10px 10px 8px;
+            color: rgba(10,10,10,0.55);
+            font-weight: 900;
+            font-size: 0.72rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+        .mnav__a {
+            display:flex;
+            align-items:center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 12px 10px;
+            text-decoration: none;
+            color: var(--text);
+            border-radius: 10px;
+            font-weight: 800;
+        }
+        .mnav__a:hover { background: rgba(0,0,0,0.03); }
+        .mnav__details { border-radius: 10px; }
+        .mnav__details summary { list-style: none; cursor: pointer; }
+        .mnav__details summary::-webkit-details-marker { display: none; }
+        .mnav__summary {
+            display:flex;
+            align-items:center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 12px 10px;
+            border-radius: 10px;
+            font-weight: 900;
+            color: var(--text);
+        }
+        .mnav__summary::after { content: '›'; color: rgba(10,10,10,0.55); font-weight: 900; }
+        .mnav__details[open] .mnav__summary::after { transform: rotate(90deg); }
+        .mnav__sub { padding: 4px 8px 10px 18px; display:grid; gap: 4px; border-left: 2px solid rgba(0,0,0,0.10); margin-left: 10px; }
+        .mnav__sub a { padding: 10px 10px; border-radius: 10px; text-decoration: none; color: rgba(10,10,10,0.78); font-weight: 700; }
+        .mnav__sub a:hover { background: rgba(0,0,0,0.03); color: var(--text); }
+
+        .nav-item {
+            position: relative;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 0 1rem;
+            height: 70px;
+            color: var(--text2);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.8rem;
+            letter-spacing: 0.06em;
+            text-transform: uppercase;
+            transition: color 0.2s, box-shadow 0.2s;
+            white-space: nowrap;
+            box-shadow: inset 0 -2px 0 0 transparent;
+        }
+
+        .nav-link:hover, .nav-link.active { color: var(--text); box-shadow: inset 0 -2px 0 0 var(--accent2); }
+
+        .nav-link svg { width: 12px; height: 12px; transition: transform 0.2s; }
+        .nav-item:hover .nav-link svg { transform: rotate(180deg); }
+
+        .dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: #ffffff;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1rem;
+            min-width: 220px;
+            display: none;
+            box-shadow: var(--shadow);
+            z-index: 200;
+        }
+
+        .nav-item:hover .dropdown { display: block; animation: fadeDown 0.2s ease; }
+
+        @keyframes fadeDown {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .dropdown a {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            color: var(--text2);
+            text-decoration: none;
+            font-size: 0.875rem;
+            border-radius: var(--radius-sm);
+            transition: all 0.15s;
+        }
+
+        .dropdown a:hover { background: var(--bg2); color: var(--text); }
+        .dropdown a .icon { font-size: 1.25rem; }
+
+        /* Dropdown "inside" submenus */
+        .dropdown .dd-details { margin: 0; padding: 0; }
+        .dropdown .dd-details summary { list-style: none; cursor: pointer; }
+        .dropdown .dd-details summary::-webkit-details-marker { display: none; }
+        .dropdown .dd-summary {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            padding: 10px 12px;
+            color: var(--text2);
+            border-radius: var(--radius-sm);
+            transition: all 0.15s;
+            user-select: none;
+        }
+        .dropdown .dd-summary:hover { background: var(--bg2); color: var(--text); }
+        .dropdown .dd-summary::after { content: '›'; color: var(--text3); font-weight: 800; }
+        .dropdown .dd-details[open] .dd-summary::after { transform: rotate(90deg); }
+        .dropdown .dd-sub {
+            margin: 2px 0 6px;
+            padding: 6px 8px 8px;
+            border-left: 2px solid var(--border);
+            display: grid;
+            gap: 2px;
+        }
+        .dropdown .dd-sub a { padding: 9px 10px; font-size: 0.86rem; }
+
+        .nav-search {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .nav-auth {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-auth a {
+            text-decoration: none;
+            color: var(--text2);
+            border: 1px solid var(--border);
+            background: var(--surface);
+            border-radius: 2px;
+            padding: 8px 14px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .nav-auth a:hover {
+            color: var(--text);
+            border-color: var(--text);
+            background: #fff;
+        }
+
+        .search-form {
+            display: flex;
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 2px;
+            overflow: hidden;
+            transition: border-color 0.2s;
+        }
+
+        .search-form:focus-within { border-color: #a1a1aa; }
+
+        .search-form input {
+            background: none;
+            border: none;
+            outline: none;
+            color: var(--text);
+            padding: 8px 16px;
+            font-family: var(--font-body);
+            font-size: 0.875rem;
+            width: 200px;
+        }
+
+        .search-form button {
+            background: var(--btn-green);
+            border: none;
+            border-left: 1px solid var(--border);
+            padding: 8px 14px;
+            cursor: pointer;
+            color: #fff;
+            font-size: 0.8rem;
+            font-weight: 600;
+            font-family: var(--font-body);
+            transition: background 0.2s, opacity 0.2s;
+        }
+
+        .search-form button:hover { background: var(--btn-green-hover); }
+
+        .nav-actions { display: flex; gap: 0.5rem; }
+
+        .btn-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            color: var(--text2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+
+        .btn-icon:hover { background: var(--text); color: #fff; border-color: var(--text); }
+
+        /* ─── MAIN CONTENT ─── */
+        main { min-height: calc(100vh - 70px); }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .flash-messages {
+            max-width: 1400px;
+            margin: 1rem auto 0;
+            padding: 0 2rem;
+            display: grid;
+            gap: 0.5rem;
+        }
+
+        .flash-msg {
+            border: 1px solid var(--border);
+            background: var(--surface);
+            border-radius: var(--radius-sm);
+            padding: 10px 14px;
+            color: var(--text2);
+            font-size: 0.9rem;
+        }
+        .flash-msg.flash-msg--error {
+            border-color: rgba(231,76,60,0.35);
+            background: rgba(231,76,60,0.08);
+            color: #b91c1c;
+            font-weight: 700;
+        }
+        .flash-msg.flash-msg--success {
+            border-color: rgba(46,204,113,0.35);
+            background: rgba(46,204,113,0.10);
+            color: #166534;
+            font-weight: 700;
+        }
+        .flash-msg.flash-msg--warning, .flash-msg.flash-msg--info {
+            border-color: rgba(0,0,0,0.12);
+            background: rgba(0,0,0,0.03);
+            color: var(--text2);
+        }
+
+        /* ─── BUTTONS ─── */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 22px;
+            border-radius: 2px;
+            font-family: var(--font-body);
+            font-weight: 600;
+            font-size: 0.875rem;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary { background: var(--btn-green); color: #fff; }
+        .btn-primary:hover { background: var(--btn-green-hover); box-shadow: 0 6px 20px var(--btn-green-glow); }
+
+        .btn-outline { background: transparent; color: var(--text); border: 1px solid var(--text3); font-weight: 600; }
+        .btn-outline:hover { background: var(--text); color: #fff; border-color: var(--text); }
+
+        /* Прозора кнопка з білим текстом (для темних фонів) */
+        .btn-outline-white {
+            background: transparent;
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.65);
+            font-weight: 700;
+        }
+        .btn-outline-white:hover {
+            background: #fff;
+            color: #0a0a0a;
+            border-color: #fff;
+        }
+
+        .btn-ghost { background: var(--surface); color: var(--text2); border: 1px solid var(--border); }
+        .btn-ghost:hover { border-color: var(--text2); color: var(--text); }
+
+        .btn-sm { padding: 8px 18px; font-size: 0.8rem; }
+
+        /* ─── CARDS ─── */
+        .product-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            overflow: hidden;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+        .product-card__link{
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+            text-decoration: none;
+            color: inherit;
+        }
+        /* Let the card-wide link receive clicks on whitespace */
+        .product-img-wrap,
+        .product-info,
+        .product-card .badges{
+            position: relative;
+            z-index: 2;
+            pointer-events: none;
+        }
+        .product-actions{
+            position: relative;
+            z-index: 3;
+            pointer-events: auto;
+        }
+        .product-actions a,
+        .product-actions button{ pointer-events: auto; }
+
+        .product-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+            border-color: #d4d4d8;
+        }
+
+        .product-card .badges {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            z-index: 2;
+        }
+
+        .badge {
+            padding: 4px 10px;
+            border-radius: 50px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-new { background: var(--green); color: #fff; }
+        .badge-sale { background: var(--red); color: #fff; }
+        .badge-hit { background: var(--btn-green-deep); color: #fafafa; }
+
+        .product-img-wrap {
+            position: relative;
+            height: 220px;
+            background: #ffffff !important;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .product-img-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            padding: 14px;
+            background: #fff !important;
+            mix-blend-mode: normal;
+            transition: transform 0.5s;
+        }
+
+        /* Єдиний фон під фото електровелосипедів; розмір картинки як у всіх товарів (cover) */
+        .product-img-wrap.electric-bike-photo-wrap {
+            background: #ffffff !important;
+        }
+
+        .product-card:hover .product-img-wrap img { transform: scale(1.02); }
+
+        .main-image.electric-bike-photo-wrap {
+            background: #ffffff !important;
+        }
+
+        .product-img-placeholder {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text3);
+            opacity: 0.85;
+            padding: 1rem;
+            text-align: center;
+            line-height: 1.3;
+        }
+
+        .product-info {
+            padding: 1.25rem;
+            flex: 1;
+            display: grid;
+            gap: 10px;
+        }
+
+        .product-brand {
+            font-size: 0.75rem;
+            color: var(--text2);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+            margin-bottom: 0;
+        }
+
+        .product-name {
+            font-family: var(--font-head);
+            font-weight: 700;
+            font-size: 1rem;
+            color: var(--text);
+            margin-bottom: 0;
+            line-height: 1.3;
+        }
+
+        .product-name a { color: inherit; text-decoration: none; }
+        .product-name a:hover { color: var(--accent2); }
+
+        .product-specs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            margin-bottom: 0;
+        }
+
+        .spec-tag {
+            background: var(--bg3);
+            color: var(--text2);
+            padding: 3px 10px;
+            border-radius: 50px;
+            font-size: 0.7rem;
+        }
+
+        .product-rating {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 0;
+        }
+
+        .stars { color: #a16207; font-size: 0.85rem; }
+        .rating-count { color: var(--text3); font-size: 0.75rem; }
+        .rating-num { color: var(--text3); font-size: 0.68rem; font-weight: 600; }
+        .rating-none { color: var(--text3); font-size: 0.72rem; }
+
+        .product-price {
+            display: flex;
+            align-items: baseline;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .price-current {
+            font-family: var(--font-head);
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--text);
+        }
+
+        .price-old {
+            font-size: 0.9rem;
+            color: var(--text3);
+            text-decoration: line-through;
+        }
+
+        .price-discount {
+            background: var(--red);
+            color: #fff;
+            padding: 2px 8px;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .product-actions {
+            display: flex;
+            gap: 8px;
+            padding: 0 1.25rem 1.25rem;
+        }
+
+        /* ─── SECTION HEADERS ─── */
+        .section-header {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+        }
+
+        .section-title {
+            font-family: var(--font-display);
+            font-size: 3rem;
+            line-height: 1;
+            letter-spacing: 2px;
+        }
+
+        .section-title .accent { color: var(--text2); }
+
+        .section-sub {
+            color: var(--text2);
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+        }
+
+        /* ─── GRID ─── */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        /* ─── FOOTER ─── */
+        footer {
+            background: #f4f4f5;
+            border-top: 1px solid var(--border);
+            padding: 4rem 2rem 2rem;
+            margin-top: 3rem;
+        }
+
+        .footer-inner {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr;
+            gap: 3rem;
+            margin-bottom: 3rem;
+        }
+
+        .footer-brand .logo { font-size: 2.5rem; margin-bottom: 1rem; display: block; }
+
+        .footer-brand p { color: var(--text2); font-size: 0.875rem; line-height: 1.7; }
+
+        .footer-section h4 {
+            font-family: var(--font-head);
+            font-weight: 700;
+            font-size: 0.875rem;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--text);
+            margin-bottom: 1.25rem;
+        }
+
+        .footer-section a {
+            display: block;
+            color: var(--text2);
+            text-decoration: none;
+            font-size: 0.875rem;
+            margin-bottom: 0.75rem;
+            transition: color 0.2s;
+        }
+
+        .footer-section a:hover { color: var(--text); text-decoration: underline; text-underline-offset: 3px; }
+
+        .footer-bottom {
+            border-top: 1px solid var(--border);
+            padding-top: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text3);
+            font-size: 0.8rem;
+        }
+
+        /* ─── AI-консультант (ChatGPT / Intercom стиль) ─── */
+        #ai-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.42);
+            backdrop-filter: blur(4px);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.28s ease;
+            z-index: 1040;
+        }
+
+        #ai-backdrop.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        #ai-fab {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            min-height: 52px;
+            padding: 0 18px;
+            background: linear-gradient(135deg, var(--btn-green) 0%, var(--btn-green-hover) 100%);
+            border-radius: 999px;
+            border: 1px solid var(--btn-green-deep);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1060;
+            box-shadow: 0 8px 28px var(--btn-green-glow);
+            transition: transform 0.2s, box-shadow 0.2s, filter 0.2s;
+            color: #fff;
+            font-family: var(--font-head);
+            font-weight: 800;
+            font-size: 0.8rem;
+            letter-spacing: 0.04em;
+            max-width: calc(100vw - 2rem);
+            white-space: nowrap;
+        }
+
+        #ai-fab:hover {
+            transform: translateY(-1px);
+            filter: brightness(1.06);
+            box-shadow: 0 10px 32px var(--btn-green-glow);
+        }
+
+        #ai-panel {
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: min(440px, 100vw);
+            max-width: 100%;
+            background: linear-gradient(180deg, #ffffff 0%, var(--surface2) 100%);
+            border-left: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            z-index: 1050;
+            box-shadow: -16px 0 48px rgba(15, 23, 42, 0.14);
+            transform: translateX(100%);
+            transition: transform 0.34s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+        }
+
+        #ai-panel.open { transform: translateX(0); }
+
+        .chat-header {
+            background: linear-gradient(120deg, var(--btn-green-deep) 0%, var(--btn-green-hover) 100%);
+            padding: 1rem 1rem 1rem 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-shrink: 0;
+        }
+
+        .chat-avatar {
+            width: 46px;
+            height: 46px;
+            background: rgba(255,255,255,0.22);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.72rem;
+            font-weight: 800;
+            color: #fff;
+            letter-spacing: 0.06em;
+            flex-shrink: 0;
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.2);
+        }
+
+        .chat-header-info { min-width: 0; flex: 1; }
+        .chat-header-info h3 {
+            font-family: var(--font-head);
+            font-weight: 700;
+            color: #ffffff;
+            font-size: 1.02rem;
+            line-height: 1.25;
+        }
+
+        .chat-header-info p {
+            font-size: 0.72rem;
+            color: rgba(255,255,255,0.88);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 2px;
+        }
+
+        .online-dot {
+            width: 8px;
+            height: 8px;
+            background: #a3a3a3;
+            border-radius: 50%;
+            display: inline-block;
+            animation: blink 2s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.45; }
+        }
+
+        .chat-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-left: auto;
+        }
+
+        .chat-clear {
+            background: rgba(255,255,255,0.18);
+            border: none;
+            color: #fff;
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 8px 10px;
+            border-radius: 999px;
+            cursor: pointer;
+            font-family: var(--font-body);
+            transition: background 0.2s;
+            white-space: nowrap;
+        }
+        .chat-clear:hover { background: rgba(255,255,255,0.32); }
+
+        .chat-close {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: #ffffff;
+            width: 36px;
+            height: 36px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+            flex-shrink: 0;
+        }
+
+        .chat-close:hover { background: rgba(255,255,255,0.38); }
+
+        .chat-quick-wrap {
+            flex-shrink: 0;
+            border-bottom: 1px solid var(--border);
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .chat-quick-label {
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text3);
+            padding: 0.6rem 1rem 0;
+        }
+
+        .chat-quick-btns {
+            padding: 0.5rem 0.85rem 0.75rem;
+            display: flex;
+            gap: 0.4rem;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
+        }
+
+        .chat-quick-btns::-webkit-scrollbar { height: 3px; }
+        .chat-quick-btns::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+        .quick-chip {
+            padding: 8px 14px;
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 999px;
+            color: var(--text2);
+            font-size: 0.72rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+            white-space: nowrap;
+            font-family: var(--font-body);
+            box-shadow: 0 1px 2px rgba(15,23,42,0.04);
+        }
+
+        .quick-chip:hover {
+            border-color: var(--accent2);
+            color: var(--btn-green-deep);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px var(--btn-green-glow);
+        }
+
+        .chat-messages {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            padding: 1rem 1rem 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.85rem;
+        }
+
+        .chat-messages::-webkit-scrollbar { width: 5px; }
+        .chat-messages::-webkit-scrollbar-track { background: transparent; }
+        .chat-messages::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+        .msg {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+            max-width: 100%;
+        }
+
+        .msg.msg--appear {
+            animation: msgIn 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+
+        @keyframes msgIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .msg.user { flex-direction: row-reverse; }
+
+        .msg-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.62rem;
+            font-weight: 800;
+            flex-shrink: 0;
+        }
+
+        .bot .msg-avatar {
+            background: var(--btn-green-deep);
+            color: #fff;
+            box-shadow: 0 2px 8px var(--btn-green-glow);
+        }
+        .user .msg-avatar {
+            background: #fff;
+            color: var(--btn-green-deep);
+            border: 1px solid var(--border);
+        }
+
+        .msg-bubble {
+            padding: 11px 15px;
+            border-radius: 18px;
+            font-size: 0.875rem;
+            line-height: 1.55;
+            max-width: min(92%, 340px);
+            box-shadow: 0 2px 12px rgba(15, 23, 42, 0.05);
+        }
+
+        .bot .msg-bubble {
+            background: #fff;
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-bottom-left-radius: 6px;
+        }
+
+        .user .msg-bubble {
+            background: linear-gradient(135deg, var(--btn-green) 0%, var(--btn-green-deep) 100%);
+            color: #ffffff;
+            border-bottom-right-radius: 6px;
+            border: none;
+        }
+
+        .msg-text { word-break: break-word; }
+
+        .bot .msg-bubble a {
+            color: var(--accent2);
+            text-decoration: underline;
+            word-break: break-all;
+        }
+        .bot .msg-bubble a:hover { color: var(--btn-green-deep); }
+
+        .chat-product-cards {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed var(--border);
+        }
+
+        .chat-product-card {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            padding: 8px;
+            border-radius: 12px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            text-decoration: none;
+            color: inherit;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+        .chat-product-card:hover {
+            border-color: #d4d4d8;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+        }
+
+        .chat-product-card__img {
+            width: 52px;
+            height: 52px;
+            border-radius: 10px;
+            overflow: hidden;
+            background: var(--bg3);
+            flex-shrink: 0;
+        }
+        .chat-product-card__img img { width: 100%; height: 100%; object-fit: contain; background: #fff; padding: 8px; }
+
+        .chat-product-card__body { min-width: 0; flex: 1; }
+        .chat-product-card__name { font-weight: 700; font-size: 0.8rem; line-height: 1.3; }
+        .chat-product-card__meta { font-size: 0.68rem; color: var(--text3); margin-top: 2px; }
+        .chat-product-card__price { font-size: 0.78rem; font-weight: 800; color: var(--text); margin-top: 4px; }
+
+        .chat-input-area {
+            padding: 0.85rem 1rem 1.1rem;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+            background: rgba(255,255,255,0.92);
+            flex-shrink: 0;
+        }
+
+        .chat-input {
+            flex: 1;
+            background: var(--bg3);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 10px 14px;
+            min-height: 44px;
+            max-height: 120px;
+            resize: none;
+            color: var(--text);
+            font-family: var(--font-body);
+            font-size: 0.875rem;
+            line-height: 1.45;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .chat-input:focus {
+            border-color: var(--accent2);
+            box-shadow: 0 0 0 2px var(--accent-glow);
+        }
+        .chat-input::placeholder { color: var(--text3); }
+
+        .chat-send {
+            width: 46px;
+            height: 46px;
+            flex-shrink: 0;
+            background: linear-gradient(135deg, var(--btn-green) 0%, var(--btn-green-hover) 100%);
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            font-size: 1.15rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+            color: #fff;
+            box-shadow: 0 2px 12px var(--btn-green-glow);
+        }
+
+        .chat-send:hover { transform: scale(1.05); background: var(--btn-green-hover); }
+        .chat-send:active { transform: scale(0.97); }
+
+        .msg--typing .msg-avatar { align-self: flex-end; }
+
+        .typing-wrap {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            border-bottom-left-radius: 6px;
+            padding: 10px 14px 12px;
+            box-shadow: 0 2px 10px rgba(15, 23, 42, 0.05);
+        }
+
+        .typing-label {
+            display: block;
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: var(--text3);
+            letter-spacing: 0.02em;
+            margin-bottom: 8px;
+        }
+
+        .typing-indicator {
+            display: flex;
+            gap: 5px;
+            align-items: center;
+        }
+
+        .typing-dot {
+            width: 7px;
+            height: 7px;
+            background: var(--text3);
+            border-radius: 50%;
+            animation: typingBounce 1.35s infinite;
+        }
+
+        .typing-dot:nth-child(1) { animation-delay: 0s; }
+        .typing-dot:nth-child(2) { animation-delay: 0.18s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.36s; }
+
+        @keyframes typingBounce {
+            0%, 60%, 100% { transform: translateY(0); opacity: 0.45; }
+            30% { transform: translateY(-7px); opacity: 1; }
+        }
+
+        .chat-input-hint { display: none; }
+
+        /* ─── UTILITIES ─── */
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 12px;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .tag-green { background: rgba(46,204,113,0.15); color: var(--green); }
+        .tag-red { background: rgba(231,76,60,0.15); color: var(--red); }
+        .tag-orange { background: #f4f4f5; color: var(--text2); border: 1px solid var(--border); }
+        .tag-blue { background: rgba(52,152,219,0.15); color: var(--blue); }
+
+        .nav-auth {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+        .nav-auth a {
+            color: var(--text2);
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        .nav-auth a:hover { color: var(--text); }
+        .nav-auth a.nav-login-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 14px;
+            border-radius: 999px;
+            background: #fff;
+            color: var(--text);
+            border: 1px solid rgba(0,0,0,0.14);
+            font-weight: 800;
+            letter-spacing: 0.02em;
+        }
+        .nav-auth a.nav-login-pill:hover { color: var(--text); border-color: rgba(0,0,0,0.28); background: rgba(0,0,0,0.02); }
+        .nav-auth a.nav-login-pill svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; }
+        .nav-auth form { display: inline; margin: 0; padding: 0; }
+        .nav-auth button.nav-logout {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text2);
+            font-size: 0.875rem;
+            font-weight: 500;
+            font-family: inherit;
+            padding: 0;
+        }
+        .nav-auth button.nav-logout:hover { color: var(--text); }
+
+        @media (max-width: 768px) {
+            .footer-grid { grid-template-columns: 1fr 1fr; }
+            #ai-panel { width: 100vw; max-width: 100vw; }
+            #ai-fab {
+                bottom: max(1rem, env(safe-area-inset-bottom));
+                right: max(1rem, env(safe-area-inset-right));
+            }
+            .chat-header-actions { flex-wrap: wrap; justify-content: flex-end; }
+            .section-title { font-size: 2rem; }
+            .nav-mega { display: none; }
+            .navbar { padding: 0 0.9rem; }
+            .nav-inner { gap: 0.75rem; }
+            .logo { font-size: 1.6rem; }
+            .nav-search { flex: 1; gap: 0.5rem; }
+            .search-form { flex: 1; min-width: 0; }
+            .search-form input { width: 100%; min-width: 0; }
+            .nav-auth { gap: 0.35rem; }
+            .nav-auth a { font-size: 0.86rem; }
+            .nav-burger { display: inline-flex; }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+    <div class="nav-inner">
+        <a href="/" class="logo">VELO<span>Ukraine</span></a>
+
+        <button class="nav-burger" type="button" aria-label="Меню" aria-expanded="false" data-mnav-open>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M4 7h16M4 12h16M4 17h16"/>
+            </svg>
+        </button>
+
+        <div class="nav-mega">
+            <!-- Велосипеди -->
+            <div class="nav-item">
+                <a href="/catalog/" class="nav-link">
+                    Велосипеди
+                    <svg viewBox="0 0 10 6" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 1l4 4 4-4"/></svg>
+                </a>
+                <div class="dropdown">
+                    <a href="/catalog/road/">Шосейні</a>
+                    <a href="/catalog/gravel/">Гравійні</a>
+                    <a href="/catalog/kids/">Дитячі</a>
+                    <a href="/catalog/electric/">Електровелосипеди</a>
+                </div>
+            </div>
+
+            <!-- Екіпірування -->
+            <div class="nav-item">
+                <a href="/catalog/gear/" class="nav-link">
+                    Екіпірування
+                    <svg viewBox="0 0 10 6" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 1l4 4 4-4"/></svg>
+                </a>
+                <div class="dropdown">
+                    <details class="dd-details">
+                        <summary class="dd-summary">Шоломи</summary>
+                        <div class="dd-sub" aria-label="Підкатегорії шоломів">
+                            <a href="/catalog/helmet/?q=шосе">Шоломи для шосе</a>
+                            <a href="/catalog/helmet/?q=mtb">Шоломи MTB</a>
+                            <a href="/catalog/helmet/?q=міський">Міські шоломи</a>
+                        </div>
+                    </details>
+                    <details class="dd-details">
+                        <summary class="dd-summary">Вело-форма</summary>
+                        <div class="dd-sub">
+                            <a href="/catalog/clothing/?q=жіноча">Жінки</a>
+                            <a href="/catalog/clothing/?q=чоловіча">Чоловіки</a>
+                            <a href="/catalog/clothing/?q=дитяча">Діти</a>
+                        </div>
+                    </details>
+                    <a href="/catalog/glasses/">Окуляри</a>
+                    <details class="dd-details">
+                        <summary class="dd-summary">Вело-туфлі</summary>
+                        <div class="dd-sub">
+                            <a href="/catalog/shoes/?q=жіночі">Жінки</a>
+                            <a href="/catalog/shoes/?q=чоловічі">Чоловіки</a>
+                            <a href="/catalog/shoes/?q=дитячі">Діти</a>
+                        </div>
+                    </details>
+                    <a href="/catalog/gloves/">Рукавички</a>
+                    <a href="/catalog/lights/">Ліхтарі</a>
+                    <a href="/catalog/bags/">Сумки</a>
+                </div>
+            </div>
+
+            {% if user.is_authenticated %}
+                <a href="{% url 'trails' %}" class="nav-link">Траси</a>
+            {% else %}
+                <a href="{% url 'login' %}?next={% url 'trails' %}" class="nav-link">Траси</a>
+            {% endif %}
+            <a href="{% url 'stores' %}" class="nav-link">Магазини</a>
+        </div>
+
+        <div class="nav-search">
+            <form class="search-form" action="{% url 'catalog' %}" method="get">
+                <input type="text" name="q" placeholder="Пошук у каталозі…" autocomplete="off">
+                <button type="submit" title="Пошук">Шукати</button>
+            </form>
+            <div class="nav-auth">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'cart' %}" data-cart-open data-navbar-cart>Кошик{% if cart_count %} ({{ cart_count }}){% endif %}</a>
+                    <a href="{% url 'profile' %}">Профіль</a>
+                    <form action="{% url 'logout' %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="nav-logout">Вийти</button>
+                    </form>
+                {% else %}
+                    <a href="{% url 'login' %}" class="nav-login-pill" data-auth-open>
+                        <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        Вхід
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="mnav" id="mnav" aria-hidden="true">
+    <div class="mnav__backdrop" data-mnav-close></div>
+    <div class="mnav__panel" role="dialog" aria-modal="true" aria-label="Меню">
+        <div class="mnav__head">
+            <a class="mnav__brand" href="{% url 'home' %}">VELO<span>Ukraine</span></a>
+            <button class="mnav__close" type="button" aria-label="Закрити меню" data-mnav-close>×</button>
+        </div>
+        <div class="mnav__body">
+            <div class="mnav__group">
+                <div class="mnav__title">Каталог</div>
+                <details class="mnav__details">
+                    <summary class="mnav__summary">Велосипеди</summary>
+                    <div class="mnav__sub">
+                        <a href="/catalog/road/">Шосейні</a>
+                        <a href="/catalog/gravel/">Гравійні</a>
+                        <a href="/catalog/kids/">Дитячі</a>
+                        <a href="/catalog/electric/">Електровелосипеди</a>
+                    </div>
+                </details>
+                <details class="mnav__details">
+                    <summary class="mnav__summary">Екіпірування</summary>
+                    <div class="mnav__sub">
+                        <a href="/catalog/helmet/">Шоломи</a>
+                        <a href="/catalog/clothing/">Вело-форма</a>
+                        <a href="/catalog/shoes/">Вело-туфлі</a>
+                        <a href="/catalog/gloves/">Рукавички</a>
+                        <a href="/catalog/lights/">Ліхтарі</a>
+                        <a href="/catalog/bags/">Сумки</a>
+                        <a href="/catalog/gear/">Все екіпірування</a>
+                    </div>
+                </details>
+                <a class="mnav__a" href="/catalog/">Весь каталог</a>
+            </div>
+
+            <div class="mnav__group">
+                <div class="mnav__title">Сервіс</div>
+                {% if user.is_authenticated %}
+                    <a class="mnav__a" href="{% url 'trails' %}">Траси</a>
+                {% else %}
+                    <a class="mnav__a" href="{% url 'login' %}?next={% url 'trails' %}">Траси</a>
+                {% endif %}
+                <a class="mnav__a" href="{% url 'stores' %}">Магазини</a>
+                <a class="mnav__a" href="#" onclick="toggleChat(); return false;">AI-чат</a>
+            </div>
+
+            <div class="mnav__group">
+                <div class="mnav__title">Акаунт</div>
+                {% if user.is_authenticated %}
+                    <a class="mnav__a" href="{% url 'cart' %}" data-cart-open>Кошик{% if cart_count %} ({{ cart_count }}){% endif %}</a>
+                    <a class="mnav__a" href="{% url 'profile' %}">Профіль</a>
+                    <form action="{% url 'logout' %}" method="post" style="padding: 6px 10px;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-ghost" style="width:100%; justify-content:center;">Вийти</button>
+                    </form>
+                {% else %}
+                    <a class="mnav__a" href="{% url 'login' %}" data-auth-open>Вхід / Реєстрація</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MAIN -->
+<main>
+    {% if messages %}
+        <div class="flash-messages">
+            {% for message in messages %}
+                <div class="flash-msg flash-msg--{{ message.tags|default:'info' }}">{{ message }}</div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    {% block content %}{% endblock %}
+</main>
+
+<!-- FOOTER -->
+<footer>
+    <div class="footer-inner">
+        <div class="footer-grid">
+            <div class="footer-brand">
+                <a href="{% url 'home' %}" class="logo">VELO<span>Ukraine</span></a>
+                <p>Сервіс для велосипедистів: <strong>розумний підбір через AI</strong>, актуальний каталог, екіпірування та маршрути по Україні. Одна ідея — допомогти обрати, а не лише пролистати товари.</p>
+            </div>
+            <div class="footer-section">
+                <h4>Каталог</h4>
+                <a href="{% url 'catalog_type' 'road' %}">Шосейні велосипеди</a>
+                <a href="{% url 'catalog_type' 'gravel' %}">Гравійні велосипеди</a>
+                <a href="{% url 'catalog_type' 'kids' %}">Дитячі велосипеди</a>
+                <a href="{% url 'catalog_type' 'electric' %}">Електровелосипеди</a>
+                <a href="{% url 'catalog_type' 'gear' %}">Екіпірування</a>
+            </div>
+            <div class="footer-section">
+                <h4>Сервіс</h4>
+                <a href="#" onclick="toggleChat(); return false;">AI-чат</a>
+                <a href="{% url 'catalog' %}">Каталог</a>
+                {% if user.is_authenticated %}
+                    <a href="{% url 'trails' %}">Велотраси</a>
+                {% else %}
+                    <a href="{% url 'login' %}?next={% url 'trails' %}">Велотраси</a>
+                {% endif %}
+                <a href="{% url 'stores' %}">Магазини</a>
+            </div>
+            <div class="footer-section">
+                <h4>Контакти</h4>
+                <a href="mailto:hello@veloukraine.ua">hello@veloukraine.ua</a>
+                <a href="tel:+380800000000">0800-000-000</a>
+                <a href="#">Про нас</a>
+                <a href="#">Політика конфіденційності</a>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <span>© 2026 VeloUkraine. Всі права захищені.</span>
+            <span>🇺🇦 Зроблено в Україні</span>
+        </div>
+    </div>
+</footer>
+
+<!-- Порівняння товарів (вибір з карток → нижня панель) -->
+<div
+    id="compare-bar"
+    class="compare-bar"
+    hidden
+    data-authed="{% if user.is_authenticated %}1{% else %}0{% endif %}"
+    data-login-url="{% url 'login' %}"
+>
+    <button type="button" class="compare-bar__strip" data-compare-toggle aria-expanded="false">
+        <span class="compare-bar__strip-title" data-compare-count>ПОРІВНЯТИ ТОВАРИ (0/4)</span>
+        <span class="compare-bar__chev" aria-hidden="true">▾</span>
+    </button>
+    <div class="compare-bar__panel">
+        <div class="container compare-bar__panel-inner">
+            <div class="compare-bar__slots" data-compare-slots></div>
+            <div class="compare-bar__row">
+                <button type="button" class="compare-bar__clear" data-compare-clear>Очистити все</button>
+                <a href="#" class="compare-bar__go compare-bar__go--disabled" data-compare-go aria-disabled="true">ПОРІВНЯТИ ТОВАРИ</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- AI-консультант VeloUkraine -->
+<div id="ai-backdrop" onclick="toggleChat()" aria-hidden="true"></div>
+
+<button type="button" id="ai-fab" onclick="toggleChat()" title="Розумний підбір з AI" aria-label="Відкрити AI-консультанта VeloUkraine">
+    <span>AI-підбір</span>
+</button>
+
+<div
+    id="ai-panel"
+    role="dialog"
+    aria-label="Чат з AI-консультантом"
+    data-csrf="{{ csrf_token }}"
+    data-chat-endpoint="{% url 'ai_chat' %}"
+    data-authed="{% if user.is_authenticated %}1{% else %}0{% endif %}"
+    onclick="event.stopPropagation()"
+>
+    <div class="chat-header">
+        <div class="chat-avatar" aria-hidden="true">AI</div>
+        <div class="chat-header-info">
+            <h3>VeloUkraine AI</h3>
+            <p><span class="online-dot"></span> Онлайн · каталог і траси</p>
+        </div>
+        <div class="chat-header-actions">
+            <button type="button" class="chat-clear" id="chat-clear" title="Очистити історію">Очистити</button>
+            <button type="button" class="chat-close" onclick="toggleChat()" aria-label="Закрити чат">✕</button>
+        </div>
+    </div>
+
+    <div class="chat-quick-wrap">
+        <div class="chat-quick-label">Швидкі дії</div>
+        <div class="chat-quick-btns" id="chat-quick-btns"></div>
+    </div>
+
+    <div class="chat-messages" id="chat-messages">
+        <div class="msg bot msg--appear">
+            <div class="msg-avatar" aria-hidden="true">AI</div>
+            <div class="msg-bubble">
+                <div class="msg-text">Вітаю! Я AI-консультант VeloUkraine: підбір велосипедів, екіпірування та трас. Історія зберігається в браузері — можете закрити чат і повернутися пізніше.</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="chat-input-area">
+        <label for="chat-input" class="visually-hidden">Повідомлення</label>
+        <textarea class="chat-input" id="chat-input" placeholder="Запит українською…" autocomplete="off" rows="1"></textarea>
+        <button type="button" class="chat-send" onclick="sendMessage()" aria-label="Надіслати повідомлення">➤</button>
+    </div>
+</div>
+
+<!-- CART MODAL -->
+<!-- AUTH MODAL -->
+<div id="auth-modal" class="auth-modal" aria-hidden="true">
+    <div class="auth-modal__backdrop" data-auth-close></div>
+    <div class="auth-modal__panel" role="dialog" aria-modal="true" aria-labelledby="auth-modal-title">
+        <button class="auth-modal__close" type="button" aria-label="Закрити" data-auth-close>×</button>
+
+        <div class="auth-modal__top">
+            <a class="auth-modal__brand" href="{% url 'home' %}">VELO<span>Ukraine</span></a>
+            <div id="auth-modal-title" class="auth-modal__title">Вхід</div>
+            <div class="auth-modal__sub">Увійдіть у свій акаунт або створіть новий</div>
+            <div class="auth-modal__tabs">
+                <button type="button" class="auth-modal__tab auth-modal__tab--active" data-auth-tab="login">Вхід</button>
+                <button type="button" class="auth-modal__tab" data-auth-tab="register">Реєстрація</button>
+            </div>
+        </div>
+
+        <div class="auth-modal__body">
+            <div class="auth-modal__error" data-auth-error hidden></div>
+
+            <form class="auth-modal__form" data-auth-form="login" method="post" action="{% url 'login' %}">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{% url 'profile' %}">
+                <label class="auth-modal__field">
+                    <span>Логін</span>
+                    <input name="username" autocomplete="username" required>
+                </label>
+                <label class="auth-modal__field">
+                    <span>Пароль</span>
+                    <input name="password" type="password" autocomplete="current-password" required>
+                </label>
+                <button class="btn btn-primary" type="submit" style="width:100%;">Увійти</button>
+            </form>
+
+            <form class="auth-modal__form" data-auth-form="register" method="post" action="{% url 'register' %}" hidden>
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{% url 'profile' %}">
+                <label class="auth-modal__field">
+                    <span>Логін</span>
+                    <input name="username" autocomplete="username" required>
+                </label>
+                <label class="auth-modal__field">
+                    <span>Email</span>
+                    <input name="email" type="email" autocomplete="email">
+                </label>
+                <label class="auth-modal__field">
+                    <span>Пароль</span>
+                    <input name="password1" type="password" autocomplete="new-password" required>
+                </label>
+                <label class="auth-modal__field">
+                    <span>Підтвердження пароля</span>
+                    <input name="password2" type="password" autocomplete="new-password" required>
+                </label>
+                <button class="btn btn-primary" type="submit" style="width:100%;">Створити акаунт</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div
+    id="cart-modal"
+    class="cart-modal"
+    data-fragment-url="{% url 'cart_modal' %}"
+    data-add-url-template="{% url 'cart_add' 0 %}"
+    data-update-url-template="{% url 'cart_update' 0 %}"
+    data-remove-url-template="{% url 'cart_remove' 0 %}"
+>
+    <div class="cart-modal__backdrop" data-cart-backdrop></div>
+    <div class="cart-modal__panel">
+        <div id="cart-modal-body"></div>
+    </div>
+</div>
+
+<style>
+    .visually-hidden {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0,0,0,0);
+        border: 0;
+    }
+
+    .compare-bar {
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 1040;
+        font-family: var(--font-body);
+    }
+    .compare-bar__strip {
+        width: 100%;
+        background: linear-gradient(90deg, var(--btn-green-deep) 0%, var(--btn-green) 100%);
+        color: #fff;
+        border: none;
+        padding: 12px 1.25rem;
+        min-height: 52px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        cursor: pointer;
+        font-weight: 800;
+        font-size: 0.8rem;
+        letter-spacing: 0.06em;
+    }
+    .compare-bar__strip:focus,
+    .compare-bar__strip:focus-visible {
+        outline: none;
+        box-shadow: none;
+    }
+    .compare-bar__chev { transition: transform 0.2s; opacity: 0.95; }
+    .compare-bar--open .compare-bar__chev { transform: rotate(180deg); }
+    .compare-bar__panel {
+        max-height: 0;
+        overflow: hidden;
+        background: #fff;
+        border-top: 1px solid #e2e8f0;
+        transition: max-height 0.3s ease;
+    }
+    .compare-bar--open .compare-bar__panel { max-height: 420px; }
+    .compare-bar__panel-inner { padding: 1rem 2rem 1.25rem; }
+    .compare-bar__slots {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 10px;
+    }
+    @media (max-width: 768px) {
+        .compare-bar__slots { grid-template-columns: 1fr 1fr; }
+    }
+    .compare-bar__slot {
+        position: relative;
+        border: 1px solid #cbd5e1;
+        border-radius: var(--radius-sm);
+        background: #f8fafc;
+        min-height: 120px;
+        padding: 8px 8px 10px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+    .compare-bar__slot--empty {
+        justify-content: center;
+        color: #cbd5e1;
+    }
+    .compare-bar__empty-mark {
+        width: 28px;
+        height: 28px;
+        border: 1px dashed #cbd5e1;
+        border-radius: 4px;
+        display: block;
+    }
+    .compare-bar__remove {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        width: 24px;
+        height: 24px;
+        border: none;
+        background: #fff;
+        color: var(--btn-green-deep);
+        border-radius: 6px;
+        font-size: 1rem;
+        line-height: 1;
+        cursor: pointer;
+        font-weight: 700;
+    }
+    .compare-bar__slot-img {
+        width: 100%;
+        height: 64px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        border-radius: 6px;
+        background: #fff;
+        padding: 8px;
+        box-sizing: border-box;
+    }
+    .compare-bar__slot-img img { max-width: 100%; max-height: 100%; object-fit: contain; background:#fff; display:block; }
+    .compare-bar__slot-img--empty { font-size: 0.65rem; color: #94a3b8; padding: 4px; }
+    .compare-bar__slot-name {
+        margin-top: 6px;
+        font-size: 0.6rem;
+        font-weight: 700;
+        line-height: 1.2;
+        color: #64748b;
+        text-transform: uppercase;
+        max-height: 2.4em;
+        overflow: hidden;
+    }
+    .compare-bar__row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 14px;
+    }
+    .compare-bar__clear {
+        background: none;
+        border: none;
+        color: var(--text2);
+        font-weight: 700;
+        font-size: 0.9rem;
+        cursor: pointer;
+        padding: 0;
+    }
+    .compare-bar__go {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 12px 22px;
+        background: linear-gradient(135deg, var(--btn-green) 0%, var(--btn-green-hover) 100%);
+        color: #fff !important;
+        font-weight: 800;
+        font-size: 0.8rem;
+        letter-spacing: 0.05em;
+        text-decoration: none;
+        border-radius: 4px;
+    }
+    .compare-bar__go--disabled {
+        opacity: 0.45;
+        pointer-events: none;
+    }
+    body.compare-bar-on { padding-bottom: 64px; }
+    body.compare-bar-on.compare-bar-tall { padding-bottom: 280px; }
+    #ai-fab.ai-fab--above-compare { bottom: 5.75rem; }
+    @media (max-width: 768px) {
+        #ai-fab.ai-fab--above-compare { bottom: 5rem; }
+    }
+
+    /* Cart modal */
+    .cart-modal { position: fixed; inset: 0; display: none; z-index: 2000; }
+    .cart-modal.open { display: block; }
+    .cart-modal__backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.28); }
+    .cart-modal__panel {
+        position: absolute;
+        top: 84px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: min(920px, calc(100vw - 48px));
+        max-height: calc(100vh - 120px);
+        background: #fff;
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        box-shadow: 0 24px 70px rgba(0,0,0,0.18);
+        overflow: auto;
+    }
+    @media (max-width: 768px) {
+        .cart-modal__panel {
+            left: 12px;
+            right: 12px;
+            transform: none;
+            width: auto;
+            top: 84px;
+            max-height: calc(100vh - 120px);
+        }
+    }
+    @media (max-width: 420px) {
+        .cart-modal__panel {
+            top: 12px;
+            max-height: calc(100vh - 24px);
+            border-radius: 16px;
+        }
+        .cart-modal__title { font-size: 1.45rem; }
+    }
+
+    .cart-modal__inner { padding: 18px; }
+    .cart-modal__head { display:flex; align-items:center; justify-content:space-between; gap: 12px; }
+    .cart-modal__title { font-family: var(--font-head); font-weight: 900; font-size: 1.75rem; }
+    .cart-modal__close {
+        width: 40px; height: 40px;
+        border-radius: 14px;
+        border: 1px solid var(--border);
+        background: #fff;
+        cursor: pointer;
+        font-size: 1.2rem;
+        font-weight: 900;
+    }
+    .cart-modal__body { margin-top: 12px; border-top: 1px solid var(--border); }
+    .cart-modal__empty { padding: 18px 0; color: var(--text2); }
+    .cart-modal__list { display: grid; gap: 0; }
+    .cart-modal__row {
+        display:grid;
+        grid-template-columns: 92px 1fr 140px 160px 44px;
+        gap: 12px;
+        align-items:center;
+        padding: 14px 0;
+        border-bottom: 1px solid var(--border);
+    }
+    @media (max-width: 900px) {
+        .cart-modal__row { grid-template-columns: 92px 1fr; grid-auto-rows: auto; }
+        .cart-modal__qty, .cart-modal__sum, .cart-modal__trash { justify-self: start; }
+    }
+    .cart-modal__img {
+        width: 92px; height: 70px;
+        border-radius: 14px;
+        border: 1px solid var(--border);
+        background: #fff;
+        overflow: hidden;
+        display:flex; align-items:center; justify-content:center;
+        color: var(--text3); font-weight: 800; font-size: 0.75rem;
+    }
+    .cart-modal__img img { width: 100%; height: 100%; object-fit: contain; background:#fff; padding: 8px; display:block; }
+    .cart-modal__name { font-weight: 900; line-height: 1.25; }
+    .cart-modal__price { color: var(--text3); margin-top: 4px; }
+    .cart-modal__qty { display:flex; align-items:center; justify-content:flex-end; gap: 10px; }
+    .cart-modal__qtybtn {
+        width: 42px; height: 42px;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        background: #fff;
+        font-weight: 900;
+        cursor: pointer;
+    }
+    .cart-modal__qtynum { min-width: 24px; text-align: center; font-weight: 900; }
+    .cart-modal__sum { text-align: right; font-weight: 900; }
+    .cart-modal__trash { border: none; background: transparent; cursor: pointer; font-size: 1.1rem; }
+    .cart-modal__foot { padding-top: 14px; display:flex; align-items:center; justify-content:space-between; gap: 12px; flex-wrap: wrap; }
+    .cart-modal__total span { color: var(--text3); font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; font-size: 0.72rem; }
+    .cart-modal__total strong { display:block; font-family: var(--font-head); font-weight: 900; font-size: 1.6rem; }
+    .cart-modal__actions { display:flex; gap: 10px; flex-wrap: wrap; }
+
+    /* Auth modal */
+    .auth-modal { position: fixed; inset: 0; display: none; z-index: 2100; }
+    .auth-modal.open { display: block; }
+    .auth-modal__backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.22); backdrop-filter: blur(10px); }
+    .auth-modal__panel {
+        position: absolute;
+        top: 84px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: min(560px, calc(100vw - 48px));
+        max-height: calc(100vh - 120px);
+        background: rgba(255,255,255,0.94);
+        border: 1px solid rgba(0,0,0,0.10);
+        border-radius: 20px;
+        box-shadow: 0 28px 90px rgba(0,0,0,0.18);
+        overflow: auto;
+    }
+    @media (max-width: 420px) {
+        .auth-modal__panel {
+            top: 12px;
+            max-height: calc(100vh - 24px);
+            width: calc(100vw - 24px);
+            border-radius: 16px;
+        }
+        .auth-modal__title { font-size: 1.2rem; }
+        .auth-modal__sub { font-size: 0.9rem; }
+    }
+    .auth-modal__close {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        width: 40px;
+        height: 40px;
+        border-radius: 14px;
+        border: 1px solid var(--border);
+        background: #fff;
+        cursor: pointer;
+        font-size: 1.2rem;
+        font-weight: 900;
+    }
+    .auth-modal__top { padding: 18px 18px 14px; border-bottom: 1px solid rgba(0,0,0,0.08); }
+    .auth-modal__brand {
+        font-family: var(--font-display);
+        letter-spacing: 2px;
+        font-size: 1.8rem;
+        color: var(--brand);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: baseline;
+        gap: 6px;
+    }
+    .auth-modal__brand span { color: rgba(10,10,10,0.55); }
+    .auth-modal__title { margin-top: 10px; font-family: var(--font-head); font-weight: 900; font-size: 1.35rem; color: #0a0a0a; }
+    .auth-modal__sub { margin-top: 6px; color: rgba(10,10,10,0.60); font-weight: 600; font-size: 0.92rem; }
+    .auth-modal__tabs {
+        display: inline-grid;
+        grid-auto-flow: column;
+        gap: 2px;
+        padding: 3px;
+        margin-top: 14px;
+        border-radius: 999px;
+        border: 1px solid rgba(0,0,0,0.12);
+        background: rgba(0,0,0,0.03);
+        width: fit-content;
+    }
+    .auth-modal__tab {
+        border: none;
+        background: transparent;
+        color: rgba(10,10,10,0.70);
+        border-radius: 999px;
+        padding: 8px 14px;
+        font-weight: 900;
+        cursor: pointer;
+        transition: background 160ms ease, color 160ms ease, transform 160ms ease;
+    }
+    .auth-modal__tab--active { background: #fff; color: #0a0a0a; box-shadow: 0 8px 24px rgba(0,0,0,0.10); }
+    .auth-modal__body { padding: 16px 18px 18px; }
+    .auth-modal__error {
+        margin-bottom: 12px;
+        padding: 10px 12px;
+        border-radius: 12px;
+        border: 1px solid rgba(0,0,0,0.12);
+        background: rgba(0,0,0,0.04);
+        font-weight: 800;
+        color: rgba(10,10,10,0.86);
+    }
+    .auth-modal__form { display: grid; gap: 10px; }
+    .auth-modal [hidden] { display: none !important; }
+    .auth-modal__field { display: grid; gap: 6px; }
+    .auth-modal__field span {
+        font-size: 0.72rem;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        font-weight: 900;
+        color: rgba(10,10,10,0.58);
+    }
+    .auth-modal__field input {
+        width: 100%;
+        padding: 12px 14px;
+        border-radius: 14px;
+        border: 1px solid rgba(0,0,0,0.14);
+        background: rgba(255,255,255,0.96);
+        outline: none;
+    }
+    .auth-modal__field input:focus { border-color: rgba(0,0,0,0.28); box-shadow: 0 0 0 3px rgba(0,0,0,0.10); }
+
+    .auth-modal .btn.btn-primary {
+        border-radius: 14px;
+        background: #0a0a0a;
+        border: 1px solid rgba(0,0,0,0.20);
+        box-shadow: 0 16px 34px rgba(0,0,0,0.18);
+    }
+    .auth-modal .btn.btn-primary:hover { filter: brightness(1.02); transform: translateY(-1px); }
+    .auth-modal .btn.btn-primary:active { transform: translateY(0); }
+</style>
+
+<script defer src="{% static 'js/chat-assistant.js' %}?v=2"></script>
+<script defer src="{% static 'js/compare-bar.js' %}"></script>
+<script defer src="{% static 'js/cart-modal.js' %}"></script>
+<script defer src="{% static 'js/auth-modal.js' %}"></script>
+
+<script>
+(() => {
+  const mnav = document.getElementById('mnav');
+  const openBtn = document.querySelector('[data-mnav-open]');
+  if (!mnav || !openBtn) return;
+
+  const closeEls = mnav.querySelectorAll('[data-mnav-close]');
+  const setOpen = (isOpen) => {
+    mnav.classList.toggle('open', isOpen);
+    mnav.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+    openBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    document.documentElement.style.overflow = isOpen ? 'hidden' : '';
+  };
+
+  openBtn.addEventListener('click', () => setOpen(true));
+  closeEls.forEach((el) => el.addEventListener('click', () => setOpen(false)));
+  mnav.addEventListener('click', (e) => {
+    const a = e.target && e.target.closest && e.target.closest('a');
+    if (a) setOpen(false);
+  });
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') setOpen(false);
+  });
+})();
+</script>
+
+{% block extra_js %}{% endblock %}
+</body>
+</html>
