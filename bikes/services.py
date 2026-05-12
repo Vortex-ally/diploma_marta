@@ -7,7 +7,7 @@ from datetime import timedelta
 from django.utils import timezone
 from django.db.models import Q, Count
 
-from velos.bikes.models import Product, Trail, RidePost, RideRequest, UserSubscription
+from bikes.models import Product, Trail, RidePost, RideRequest, UserSubscription
 
 _TRAIL_TYPES_FOR_BIKE = {
     'road': ('road', 'mixed'),

@@ -403,14 +403,14 @@ class Review(models.Model):
 
 @receiver(post_save, sender=Review)
 def _review_saved_refresh_rating(sender, instance, **kwargs):
-    from velos.bikes.services import recompute_product_rating
+    from bikes.services import recompute_product_rating
 
     recompute_product_rating(instance.product)
 
 
 @receiver(post_delete, sender=Review)
 def _review_deleted_refresh_rating(sender, instance, **kwargs):
-    from velos.bikes.services import recompute_product_rating
+    from bikes.services import recompute_product_rating
 
     product = Product.objects.filter(pk=instance.product_id).first()
     if product:

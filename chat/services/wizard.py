@@ -7,7 +7,7 @@ from typing import Any
 
 from django.http import HttpRequest
 
-from velos.chat.services.recommendations import recommend_bikes
+from chat.services.recommendations import recommend_bikes
 
 CANCEL_RE = re.compile(
     r'\b(скасув|відмін|стоп|зупин|вийти|досить|не\s*треба)\w*',

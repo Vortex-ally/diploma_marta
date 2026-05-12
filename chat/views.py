@@ -9,15 +9,15 @@ from django.urls import reverse
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.http import require_POST
 
-from velos.chat.services.chips import suggest_chips
-from velos.chat.services.knowledge import site_knowledge_block
-from velos.chat.services.openrouter import build_openrouter_messages, call_openrouter
-from velos.chat.services.wizard import (
+from chat.services.chips import suggest_chips
+from chat.services.knowledge import site_knowledge_block
+from chat.services.openrouter import build_openrouter_messages, call_openrouter
+from chat.services.wizard import (
     default_wizard_state,
     handle_bike_wizard,
     should_start_bike_wizard,
 )
-from velos.chat.models import AIChatRecord
+from chat.models import AIChatRecord
 
 logger = logging.getLogger('velo.chat')
 

@@ -3,7 +3,7 @@ import os, django, urllib.request, ssl
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'velosite.settings')
 django.setup()
 
-from velos.bikes.models import Product, Trail, ProductImage
+from bikes.models import Product, Trail, ProductImage
 
 # Disable SSL verification for simple downloads
 ctx = ssl.create_default_context()

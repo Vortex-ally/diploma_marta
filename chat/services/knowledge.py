@@ -2,9 +2,9 @@
 
 from urllib.parse import quote
 
-from velos.bikes.models import Product, Trail
+from bikes.models import Product, Trail
 
-from velos.chat.constants import CATALOG_RULES
+from chat.constants import CATALOG_RULES
 
 
 def site_knowledge_block(request) -> str:

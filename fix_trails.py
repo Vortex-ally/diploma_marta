@@ -3,7 +3,7 @@ import os, django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'velosite.settings')
 django.setup()
 
-from velos.bikes.models import Trail
+from bikes.models import Trail
 
 good_trail_images = [
     '/media/trails/trail_19.jpg',

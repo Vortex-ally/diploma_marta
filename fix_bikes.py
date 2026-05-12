@@ -3,7 +3,7 @@ import os, django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'velosite.settings')
 django.setup()
 
-from velos.bikes.models import Product, ProductImage
+from bikes.models import Product, ProductImage
 
 bike_images = [
     '/media/products/specialized-rockhopper-expert.jpg',

@@ -15,7 +15,7 @@ import re
 
 from .forms import RegisterForm, LoginForm, UserForm, UserProfileForm, ReviewForm, RidePostForm
 from .decorators import login_required_with_message
-from velos.chat.models import AIChatRecord
+from chat.models import AIChatRecord
 from .models import (
     Category,
     Product,

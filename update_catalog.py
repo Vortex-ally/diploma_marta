@@ -3,7 +3,7 @@ import os, django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'velosite.settings')
 django.setup()
 
-from velos.bikes.models import Product, Category, Trail, ProductImage
+from bikes.models import Product, Category, Trail, ProductImage
 import random
 
 # TASK 1: Fix Scott Addict RC Team Issue color

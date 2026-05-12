@@ -1,4 +1,4 @@
-from velos.bikes.cart import cart_count
+from bikes.cart import cart_count
 
 
 def cart_context(request):

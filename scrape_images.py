@@ -10,7 +10,7 @@ import json
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'velosite.settings')
 django.setup()
 
-from velos.bikes.models import Product, Category, Brand, Store, Trail
+from bikes.models import Product, Category, Brand, Store, Trail
 
 def get_image_url(query):
     # Try searching duckduckgo html

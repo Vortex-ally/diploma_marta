@@ -3,8 +3,8 @@ Management command to populate sample data for VeloUkraine
 Run: python manage.py seed_data
 """
 from django.core.management.base import BaseCommand
-from velos.bikes.models import Category, Brand, Product, Store, StoreLocation, ProductStore, Trail
-from velos.bikes.management.themed_product_images import pick_themed_image
+from bikes.models import Category, Brand, Product, Store, StoreLocation, ProductStore, Trail
+from bikes.management.themed_product_images import pick_themed_image
 
 
 class Command(BaseCommand):

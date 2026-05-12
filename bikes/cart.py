@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
-from velos.bikes.models import Product
+from bikes.models import Product
 
 
 SESSION_KEY = 'velo_cart_v1'

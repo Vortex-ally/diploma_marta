@@ -7,7 +7,7 @@ import urllib.request
 
 import certifi
 
-from velos.chat.constants import OPENROUTER_URL, SYSTEM_PROMPT
+from chat.constants import OPENROUTER_URL, SYSTEM_PROMPT
 
 
 def _https_context():

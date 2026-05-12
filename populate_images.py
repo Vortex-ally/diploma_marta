@@ -11,7 +11,7 @@ from PIL import Image
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'velosite.settings')
 django.setup()
 
-from velos.bikes.models import Product, Trail
+from bikes.models import Product, Trail
 from django.core.files.base import ContentFile
 from django.conf import settings
 

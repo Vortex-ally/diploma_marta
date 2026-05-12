@@ -2,7 +2,7 @@
 
 from django.http import HttpRequest
 
-from velos.bikes.models import Product
+from bikes.models import Product
 
 
 STYLE_TO_BIKE_TYPES = {

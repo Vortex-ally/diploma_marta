@@ -11,7 +11,7 @@ from PIL import Image
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'velosite.settings')
 django.setup()
 
-from velos.bikes.models import Product
+from bikes.models import Product
 from django.core.files.base import ContentFile
 TARGET_SIZE = (800, 600)
 

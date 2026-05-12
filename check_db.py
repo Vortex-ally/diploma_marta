@@ -4,7 +4,7 @@ import django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'velosite.settings')
 django.setup()
 
-from velos.bikes.models import Product, Category, Brand, Store, Trail
+from bikes.models import Product, Category, Brand, Store, Trail
 
 products = Product.objects.all()
 print(f"Products: {products.count()}")

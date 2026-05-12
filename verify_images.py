@@ -4,7 +4,7 @@ import django
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'velosite.settings')
 django.setup()
 
-from velos.bikes.models import Product, Trail
+from bikes.models import Product, Trail
 
 products_without_images = Product.objects.filter(image_url='').count()
 trails_without_images = Trail.objects.filter(image_url='').count()
