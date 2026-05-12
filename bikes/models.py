@@ -271,27 +271,32 @@ class ProductImage(models.Model):
 
 @receiver(post_save, sender=Product)
 def _ensure_primary_product_image(sender, instance, created, **kwargs):
-    """
-    Keep gallery usable by auto-creating the first image entry
-    when a product has a main image but no gallery images yet.
-    """
-    if instance.images.exists():
-        return
+    primary = instance.images.order_by('sort_order', 'id').first()
+
     if instance.image:
-        ProductImage.objects.create(
-            product=instance,
-            image=instance.image,
-            alt=instance.name or '',
-            sort_order=0,
-        )
+        if primary:
+            if primary.image != instance.image:
+                ProductImage.objects.filter(pk=primary.pk).update(
+                    image=instance.image, image_url=''
+                )
+        else:
+            ProductImage.objects.create(
+                product=instance, image=instance.image,
+                alt=instance.name or '', sort_order=0,
+            )
         return
+
     if instance.image_url:
-        ProductImage.objects.create(
-            product=instance,
-            image_url=instance.image_url,
-            alt=instance.name or '',
-            sort_order=0,
-        )
+        if primary and not primary.image:
+            if primary.image_url != instance.image_url:
+                ProductImage.objects.filter(pk=primary.pk).update(
+                    image_url=instance.image_url
+                )
+        elif not primary:
+            ProductImage.objects.create(
+                product=instance, image_url=instance.image_url,
+                alt=instance.name or '', sort_order=0,
+            )
 
 
 class Store(models.Model):
