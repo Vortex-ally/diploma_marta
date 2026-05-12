@@ -51,11 +51,11 @@ class ProductImageInline(admin.TabularInline):
 class ProductAdmin(admin.ModelAdmin):
     list_display = ['name', 'brand', 'category', 'price', 'in_stock', 'is_featured']
     list_filter = ['category', 'brand', 'in_stock', 'is_featured', 'is_new']
-    search_fields = ['name', 'description', 'tags__name']
+    search_fields = ['name', 'description']
     prepopulated_fields = {'slug': ('name',)}
     inlines = [ProductImageInline, ProductStoreInline, ReviewInline]
     fieldsets = (
-        ('Основне', {'fields': ('name', 'slug', 'brand', 'category', 'short_description', 'description', 'tags', 'image', 'image_url')}),
+        ('Основне', {'fields': ('name', 'slug', 'brand', 'category', 'short_description', 'description', 'image', 'image_url')}),
         ('Ціни', {'fields': ('price', 'old_price', 'condition', 'in_stock')}),
         ('Розміри (екіпірування)', {'fields': ('available_sizes',), 'classes': ('collapse',)}),
         ('Вело-сумки (детальний опис на сайті)', {'fields': ('bag_features', 'bag_volume', 'bag_weight_note', 'bag_dimensions'), 'classes': ('collapse',)}),
