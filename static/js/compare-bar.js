@@ -97,9 +97,10 @@
         var slot = document.createElement('div');
         if (it) {
           slot.className = 'compare-bar__slot compare-bar__slot--filled';
-          // Self-heal: older stored items may have empty image.
+          // Self-heal: older stored items may have empty or stale /media/ image.
           // If current page has a compare button for this product, reuse its data-compare-image.
-          if (!it.image) {
+          var isStaleImage = !it.image || it.image.indexOf('/media/') === 0;
+          if (isStaleImage) {
             try {
               var btn = document.querySelector(
                 '[data-compare-add][data-compare-id="' + String(it.id) + '"]'
@@ -219,7 +220,7 @@
     e.preventDefault();
     e.stopPropagation();
     var img = btn.getAttribute('data-compare-image') || '';
-    if (!img) {
+    if (!img || img.indexOf('/media/') === 0) {
       // Fallback: try to grab the visible product image from the same card/section.
       try {
         var root =
