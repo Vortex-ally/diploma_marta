@@ -609,7 +609,7 @@ def compare_prices(request):
     qs = (
         Product.objects.filter(pk__in=product_ids)
         .select_related('brand', 'category')
-        .prefetch_related('store_prices__store')
+        .prefetch_related('store_prices__store', 'images')
     )
     products = list(qs)
     products.sort(key=lambda p: id_order.get(p.id, 999))
