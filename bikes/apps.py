@@ -6,4 +6,4 @@ class BikesConfig(AppConfig):
     verbose_name = 'Велосипеди'
 
     def ready(self):
-        import velos.bikes.signals  # noqa: F401
+        import bikes.signals  # noqa: F401
