@@ -769,56 +769,50 @@ def create_payment_session(request):
     return redirect(session.url, permanent=False)
 
 
-@login_required_with_message()
 def payment_success(request):
     session_id = (request.GET.get('session_id') or '').strip()
-    if not session_id:
-        messages.error(request, 'Не вдалося підтвердити оплату (немає session_id).')
-        return redirect('checkout')
 
-    if not getattr(settings, 'STRIPE_SECRET_KEY', ''):
-        messages.error(request, 'Оплата тимчасово недоступна: не налаштований STRIPE_SECRET_KEY.')
-        return redirect('checkout')
+    # If user is not authenticated, redirect to login preserving the full URL
+    if not request.user.is_authenticated:
+        from django.urls import reverse as _rev
+        login_url = _rev('login')
+        return redirect(f'{login_url}?next={request.get_full_path()}')
 
-    import stripe
+    # Try to find order by session_id first (works even if Stripe is unavailable)
+    order = Order.objects.filter(stripe_session_id=session_id).filter(user=request.user).first()
 
-    stripe.api_key = settings.STRIPE_SECRET_KEY
+    # Try to sync payment status from Stripe
+    if session_id and getattr(settings, 'STRIPE_SECRET_KEY', ''):
+        try:
+            import stripe
+            stripe.api_key = settings.STRIPE_SECRET_KEY
+            session = stripe.checkout.Session.retrieve(session_id)
 
-    try:
-        session = stripe.checkout.Session.retrieve(session_id)
-    except Exception:
-        order = Order.objects.filter(stripe_session_id=session_id, user=request.user).first()
-        if order:
-            return render(request, 'bikes/payment_success.html', {'order': order})
-        messages.error(request, 'Не вдалося підтвердити оплату через Stripe.')
-        return redirect('checkout')
+            if not order:
+                try:
+                    order_id = session.metadata.get('order_id') if session.metadata else None
+                    if order_id:
+                        order = Order.objects.filter(pk=int(order_id), user=request.user).first()
+                except Exception:
+                    pass
 
-    order_id = (session.metadata or {}).get('order_id')
-    order = Order.objects.filter(pk=order_id, user=request.user).first() if order_id else None
+            if order and order.status != 'paid':
+                try:
+                    if session.payment_status == 'paid':
+                        order.status = 'paid'
+                        order.paid_at = timezone.now()
+                        order.stripe_payment_intent_id = str(session.payment_intent or '')
+                        order.save(update_fields=['status', 'paid_at', 'stripe_payment_intent_id'])
+                        request.session.pop('velo_cart_v1', None)
+                        request.session.modified = True
+                except Exception:
+                    pass
+        except Exception:
+            pass
+
     if not order:
-        order = Order.objects.filter(stripe_session_id=session_id, user=request.user).first()
-
-    if not order:
-        messages.error(request, 'Замовлення не знайдено.')
-        return redirect('checkout')
-
-    # Mark paid
-    try:
-        payment_status = getattr(session, 'payment_status', None) or session.get('payment_status')
-        payment_intent = getattr(session, 'payment_intent', None) or session.get('payment_intent') or ''
-    except Exception:
-        payment_status = None
-        payment_intent = ''
-
-    if payment_status == 'paid' and order.status != 'paid':
-        order.status = 'paid'
-        order.paid_at = timezone.now()
-        order.stripe_payment_intent_id = payment_intent or ''
-        order.save(update_fields=['status', 'paid_at', 'stripe_payment_intent_id'])
-
-        # Clear cart after successful payment
-        request.session.pop('velo_cart_v1', None)
-        request.session.modified = True
+        messages.error(request, 'Замовлення не знайдено. Зверніться до підтримки.')
+        return redirect('catalog')
 
     return render(request, 'bikes/payment_success.html', {'order': order})
 

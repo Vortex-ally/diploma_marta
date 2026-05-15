@@ -12,7 +12,6 @@ from .models import (
     UserProfile,
     Order,
     OrderItem,
-    RidePost,
 )
 
 
@@ -128,11 +127,5 @@ class OrderAdmin(admin.ModelAdmin):
     readonly_fields = ('created_at', 'paid_at', 'stripe_session_id', 'stripe_payment_intent_id')
     inlines = [OrderItemInline]
 
-
-@admin.register(RidePost)
-class RidePostAdmin(admin.ModelAdmin):
-    list_display = ['id', 'city', 'start_at', 'ride_type', 'level', 'author', 'is_active', 'is_featured', 'created_at']
-    list_filter = ['ride_type', 'level', 'is_active', 'is_featured', 'city']
-    search_fields = ['city', 'pace', 'note', 'author__username']
 
 
