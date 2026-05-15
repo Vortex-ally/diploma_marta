@@ -258,6 +258,8 @@ def catalog(request, cat_type=None):
         else:
             current_category = get_object_or_404(Category, slug=cat_type)
             products = products.filter(category=current_category)
+            if current_category.category_type == 'gear':
+                sidebar_mode = 'gear'
     else:
         # If user searches from navbar, we want to search across ALL products,
         # not only the default "bikes" catalog.

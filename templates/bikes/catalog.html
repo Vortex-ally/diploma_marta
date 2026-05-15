@@ -436,21 +436,21 @@
                             <a href="/catalog/helmet/?q=міський">Міські шоломи</a>
                         </div>
                     </details>
-                    <details class="cat-details" {% if cat_type == 'clothing' %}open{% endif %}>
-                        <summary class="cat-main {% if cat_type == 'clothing' %}active{% endif %}">Вело-форма</summary>
+                    <details class="cat-details" {% if cat_type in 'clothing clothing-women clothing-men clothing-kids' %}open{% endif %}>
+                        <summary class="cat-main {% if cat_type in 'clothing clothing-women clothing-men clothing-kids' %}active{% endif %}">Вело-форма</summary>
                         <div class="cat-sub" aria-label="Підкатегорії вело-форми">
-                            <a href="/catalog/clothing/?q=жіноча">Жінки</a>
-                            <a href="/catalog/clothing/?q=чоловіча">Чоловіки</a>
-                            <a href="/catalog/clothing/?q=дитяча">Діти</a>
+                            <a href="/catalog/clothing-women/" class="{% if cat_type == 'clothing-women' %}active{% endif %}">Жінки</a>
+                            <a href="/catalog/clothing-men/" class="{% if cat_type == 'clothing-men' %}active{% endif %}">Чоловіки</a>
+                            <a href="/catalog/clothing-kids/" class="{% if cat_type == 'clothing-kids' %}active{% endif %}">Діти</a>
                         </div>
                     </details>
                     <a href="/catalog/glasses/" class="{% if cat_type == 'glasses' %}active{% endif %}">Окуляри</a>
-                    <details class="cat-details" {% if cat_type == 'shoes' %}open{% endif %}>
-                        <summary class="cat-main {% if cat_type == 'shoes' %}active{% endif %}">Вело-туфлі</summary>
+                    <details class="cat-details" {% if cat_type in 'shoes shoes-women shoes-men shoes-kids' %}open{% endif %}>
+                        <summary class="cat-main {% if cat_type in 'shoes shoes-women shoes-men shoes-kids' %}active{% endif %}">Вело-туфлі</summary>
                         <div class="cat-sub" aria-label="Підкатегорії вело-туфлів">
-                            <a href="/catalog/shoes/?q=жіночі">Жінки</a>
-                            <a href="/catalog/shoes/?q=чоловічі">Чоловіки</a>
-                            <a href="/catalog/shoes/?q=дитячі">Діти</a>
+                            <a href="/catalog/shoes-women/" class="{% if cat_type == 'shoes-women' %}active{% endif %}">Жінки</a>
+                            <a href="/catalog/shoes-men/" class="{% if cat_type == 'shoes-men' %}active{% endif %}">Чоловіки</a>
+                            <a href="/catalog/shoes-kids/" class="{% if cat_type == 'shoes-kids' %}active{% endif %}">Діти</a>
                         </div>
                     </details>
                     <a href="/catalog/gloves/" class="{% if cat_type == 'gloves' %}active{% endif %}">Рукавички</a>
