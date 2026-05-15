@@ -751,13 +751,18 @@ def create_payment_session(request):
             }
         )
 
-    session = stripe.checkout.Session.create(
-        mode='payment',
-        line_items=stripe_line_items,
-        success_url=success_url,
-        cancel_url=cancel_url,
-        metadata={'order_id': str(order.pk), 'user_id': str(request.user.pk)},
-    )
+    try:
+        session = stripe.checkout.Session.create(
+            mode='payment',
+            line_items=stripe_line_items,
+            success_url=success_url,
+            cancel_url=cancel_url,
+            metadata={'order_id': str(order.pk), 'user_id': str(request.user.pk)},
+        )
+    except Exception as e:
+        order.delete()
+        messages.error(request, f'Помилка Stripe: {e}')
+        return redirect('checkout')
 
     order.stripe_session_id = session.id
     order.save(update_fields=['stripe_session_id'])
@@ -797,11 +802,18 @@ def payment_success(request):
         messages.error(request, 'Замовлення не знайдено.')
         return redirect('checkout')
 
-    # Mark paid (Stripe may return payment_status='paid')
-    if session.get('payment_status') == 'paid' and order.status != 'paid':
+    # Mark paid
+    try:
+        payment_status = getattr(session, 'payment_status', None) or session.get('payment_status')
+        payment_intent = getattr(session, 'payment_intent', None) or session.get('payment_intent') or ''
+    except Exception:
+        payment_status = None
+        payment_intent = ''
+
+    if payment_status == 'paid' and order.status != 'paid':
         order.status = 'paid'
         order.paid_at = timezone.now()
-        order.stripe_payment_intent_id = session.get('payment_intent') or ''
+        order.stripe_payment_intent_id = payment_intent or ''
         order.save(update_fields=['status', 'paid_at', 'stripe_payment_intent_id'])
 
         # Clear cart after successful payment

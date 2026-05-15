@@ -13,8 +13,6 @@ from .models import (
     Order,
     OrderItem,
     RidePost,
-    RideRequest,
-    UserSubscription,
 )
 
 
@@ -138,15 +136,3 @@ class RidePostAdmin(admin.ModelAdmin):
     search_fields = ['city', 'pace', 'note', 'author__username']
 
 
-@admin.register(RideRequest)
-class RideRequestAdmin(admin.ModelAdmin):
-    list_display = ['id', 'post', 'requester', 'status', 'created_at']
-    list_filter = ['status', 'created_at']
-    search_fields = ['post__city', 'post__author__username', 'requester__username']
-
-
-@admin.register(UserSubscription)
-class UserSubscriptionAdmin(admin.ModelAdmin):
-    list_display = ['user', 'tier', 'status', 'current_period_end', 'updated_at']
-    list_filter = ['tier', 'status']
-    search_fields = ['user__username', 'stripe_customer_id', 'stripe_subscription_id']
