@@ -778,7 +778,16 @@ def payment_success(request):
     import stripe
 
     stripe.api_key = settings.STRIPE_SECRET_KEY
-    session = stripe.checkout.Session.retrieve(session_id)
+
+    try:
+        session = stripe.checkout.Session.retrieve(session_id)
+    except Exception:
+        order = Order.objects.filter(stripe_session_id=session_id, user=request.user).first()
+        if order:
+            return render(request, 'bikes/payment_success.html', {'order': order})
+        messages.error(request, 'Не вдалося підтвердити оплату через Stripe.')
+        return redirect('checkout')
+
     order_id = (session.metadata or {}).get('order_id')
     order = Order.objects.filter(pk=order_id, user=request.user).first() if order_id else None
     if not order:
